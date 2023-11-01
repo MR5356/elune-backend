@@ -45,6 +45,10 @@ func New(config *config.Config) (server *Server, err error) {
 
 	api := engine.Group(config.Server.Prefix)
 
+	api.GET("/health", func(c *gin.Context) {
+		response.Success(c, nil)
+	})
+
 	engine.NoRoute(func(c *gin.Context) {
 		response.New(c, http.StatusNotFound, response.CodeNotFound, response.MsgNotFound, nil)
 	})
