@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/MR5356/elune-backend/pkg/config"
 	"github.com/MR5356/elune-backend/pkg/controller"
+	"github.com/MR5356/elune-backend/pkg/domain/navigation"
 	"github.com/MR5356/elune-backend/pkg/domain/site"
 	"github.com/MR5356/elune-backend/pkg/middleware"
 	"github.com/MR5356/elune-backend/pkg/persistence/cache"
@@ -63,9 +64,11 @@ func New(config *config.Config) (server *Server, err error) {
 	logrus.Debugf("cache: %+v", cc)
 
 	siteService := site.NewService(db, cc)
+	navigationService := navigation.NewService(db, cc)
 
 	services := []service.Service{
 		siteService,
+		navigationService,
 	}
 	for _, srv := range services {
 		err := srv.Initialize()
@@ -76,6 +79,7 @@ func New(config *config.Config) (server *Server, err error) {
 
 	controllers := []controller.Controller{
 		site.NewController(siteService),
+		navigation.NewController(navigationService),
 	}
 	for _, ctrl := range controllers {
 		ctrl.RegisterRoute(api)

@@ -50,8 +50,8 @@ func (s *Service) Initialize() error {
 	defaultSiteConfigs := []*SiteConfig{
 		{Key: "title", Value: "Elune"},
 		{Key: "description", Value: "Website of Elune"},
-		{Key: "logo", Value: "@/assets/logo.png"},
-		{Key: "favicon", Value: "/favicon.png"},
+		{Key: "logo", Value: "/logo.svg"},
+		{Key: "favicon", Value: "/favicon.ico"},
 		{Key: "copyright", Value: "© 2022 Elune"},
 		{Key: "beian", Value: "冀公网安备13112202000229号"},
 		{Key: "beianMiit", Value: "冀ICP备20003324号-1"},
