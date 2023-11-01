@@ -1,33 +1,42 @@
-/*
-Copyright 2016 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
-// Note: the example only works with the code within the same release/branch.
 package main
 
 import (
-	"github.com/MR5356/elune-backend/pkg/kubernetes/client"
-	"time"
+	"github.com/MR5356/elune-backend/pkg/config"
+	"github.com/MR5356/elune-backend/pkg/server"
+	"github.com/MR5356/elune-backend/pkg/utils/structutil"
+	"github.com/sirupsen/logrus"
+	"os"
+	"strconv"
 )
 
 func main() {
+	var withs []config.Cfg
 
-	c, err := client.New("/Users/ruima/.kube/hw-config")
-	if err != nil {
-		panic(err.Error())
+	// 是否开启debug
+	if os.Getenv(config.EluneEnvDebug) == "true" {
+		logrus.SetLevel(logrus.DebugLevel)
+		withs = append(withs, config.WithDebug(true))
 	}
-	c.GetNodes()
-	time.Sleep(1 * time.Second)
+
+	// 是否自定义端口
+	if len(os.Getenv(config.EluneEnvPort)) > 0 {
+		port, err := strconv.Atoi(os.Getenv(config.EluneEnvPort))
+		if err == nil {
+			withs = append(withs, config.WithPort(port))
+		} else {
+			logrus.Warnf("invalid port: %s", os.Getenv(config.EluneEnvPort))
+		}
+	}
+
+	cfg := config.New(withs...)
+	logrus.Debugf("run with config: %+v", structutil.Struct2String(cfg))
+
+	srv, err := server.New(cfg)
+	if err != nil {
+		logrus.Fatalf("create server error: %s", err)
+	}
+
+	if err := srv.Run(); err != nil {
+		logrus.Fatalf("run server error: %s", err)
+	}
 }

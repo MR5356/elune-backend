@@ -20,7 +20,7 @@ func Struct2Map(v any) map[string]any {
 	relType := elem.Type()
 	for i := 0; i < relType.NumField(); i++ {
 		k := relType.Field(i).Name
-		if k == "BaseModel" {
+		if k == "BaseModel" || k == "ID" {
 			continue
 		}
 		res[k] = elem.Field(i).Interface()
