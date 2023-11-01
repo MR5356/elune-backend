@@ -14,7 +14,7 @@ func Record() gin.HandlerFunc {
 		start := time.Now()
 
 		defer func() {
-			if path == "/probe" {
+			if path == "/api/v1/health" {
 				return
 			}
 			cost := time.Since(start)

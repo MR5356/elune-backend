@@ -13,4 +13,4 @@ FROM alpine:3.18
 WORKDIR /app
 COPY --from=builder /build/bin .
 EXPOSE 80
-ENTRYPOINT ["/app/leisure-api"]
+ENTRYPOINT ["/app/elune-backend"]
