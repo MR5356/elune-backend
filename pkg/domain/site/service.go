@@ -53,8 +53,8 @@ func (s *Service) Initialize() error {
 		{Key: "logo", Value: "/logo.svg"},
 		{Key: "favicon", Value: "/favicon.ico"},
 		{Key: "copyright", Value: "© 2022 Elune"},
-		{Key: "beian", Value: "冀公网安备13112202000229号"},
-		{Key: "beianMiit", Value: "冀ICP备20003324号-1"},
+		{Key: "beian", Value: "冀公网安备 13112202000250号"},
+		{Key: "beianMiit", Value: "冀ICP备20003324号-3"},
 	}
 
 	for _, siteConfig := range defaultSiteConfigs {
