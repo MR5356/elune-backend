@@ -23,4 +23,4 @@ image: ## Build and push docker image
 	docker buildx build --platform linux/arm64,linux/amd64 -t registry.cn-hangzhou.aliyuncs.com/toodo/elune-backend:$(VERSION) . --push
 
 deploy: image ## Deploy to k8s
-	helm upgrade --install $(NAME) -n toodo ./charts --set image.tag=$(VERSION)
+	helm upgrade --install --wait $(NAME) -n toodo ./charts --set image.tag=$(VERSION)
