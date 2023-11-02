@@ -23,9 +23,10 @@ type NodeInfo struct {
 }
 
 func (c *Client) GetNodes() (nodes []NodeInfo, err error) {
+	nodes = make([]NodeInfo, 0)
 	list, err := c.client.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
-		logrus.Fatal(err)
+		return nil, err
 	}
 
 	for _, node := range list.Items {

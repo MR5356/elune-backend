@@ -55,6 +55,7 @@ func (s *Service) Initialize() error {
 		{Key: "copyright", Value: "© 2022 Elune"},
 		{Key: "beian", Value: "冀公网安备 13112202000250号"},
 		{Key: "beianMiit", Value: "冀ICP备20003324号-3"},
+		{Key: "kubeconfig", Value: ""},
 	}
 
 	for _, siteConfig := range defaultSiteConfigs {

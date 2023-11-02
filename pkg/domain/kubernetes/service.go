@@ -9,8 +9,8 @@ type Service struct {
 	client *client.Client
 }
 
-func NewService() *Service {
-	c, err := client.New()
+func NewService(config string) *Service {
+	c, err := client.New(config)
 	if err != nil {
 		logrus.Errorf("create kubernetes client error: %+v", err)
 		return nil
