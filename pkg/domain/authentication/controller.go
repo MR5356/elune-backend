@@ -100,11 +100,24 @@ func (c *Controller) handleTokenNeedRefresh(ctx *gin.Context) {
 	}
 }
 
+func (c *Controller) handleGetUserRole(ctx *gin.Context) {
+	tokenString := ginutil.GetToken(ctx)
+
+	user, err := c.jwtService.ParseToken(tokenString)
+	if err != nil {
+		response.Success(ctx, []string{})
+	} else {
+		role, _ := c.rbacService.GetRolesForUser(user.Username)
+		response.Success(ctx, role)
+	}
+}
+
 func (c *Controller) RegisterRoute(group *gin.RouterGroup) {
 	api := group.Group("/user")
 	api.POST("login", c.handleLogin)
 	api.DELETE("logout", c.handleLogout)
 	api.GET("info", c.handleInfo)
+	api.GET("role", c.handleGetUserRole)
 	api.GET("token/refresh", c.handleTokenNeedRefresh)
-	api.PUT("/token/refresh", c.handleRefreshToken)
+	api.PUT("token/refresh", c.handleRefreshToken)
 }
