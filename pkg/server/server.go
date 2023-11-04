@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/MR5356/elune-backend/pkg/config"
 	"github.com/MR5356/elune-backend/pkg/controller"
+	"github.com/MR5356/elune-backend/pkg/domain/authentication"
 	"github.com/MR5356/elune-backend/pkg/domain/navigation"
 	"github.com/MR5356/elune-backend/pkg/domain/site"
 	"github.com/MR5356/elune-backend/pkg/middleware"
@@ -67,8 +68,17 @@ func New(config *config.Config) (server *Server, err error) {
 	}
 	logrus.Debugf("cache: %+v", cc)
 
+	// rbac
+	rbacService, err := authentication.NewRBACService(db.DB)
+	if err != nil {
+		return nil, err
+	}
+	// jwt
+	jwtService := authentication.NewJWTService(config.Server.Secret, config.Server.Issuer, config.Server.Expire)
+
 	siteService := site.NewService(db, cc)
 	navigationService := navigation.NewService(db, cc)
+	userService := authentication.NewService(db, cc)
 	//
 	//selfKubeconfig, _ := siteService.GetKey("kubeconfig")
 	//kubernetesService := kubernetes.NewService(selfKubeconfig)
@@ -77,6 +87,9 @@ func New(config *config.Config) (server *Server, err error) {
 		siteService,
 		navigationService,
 		//kubernetesService,
+		rbacService,
+		jwtService,
+		userService,
 	}
 	for _, srv := range services {
 		err := srv.Initialize()
@@ -85,10 +98,13 @@ func New(config *config.Config) (server *Server, err error) {
 		}
 	}
 
+	api.Use(middleware.Authentication(config, rbacService, jwtService))
+
 	controllers := []controller.Controller{
 		site.NewController(siteService),
 		navigation.NewController(navigationService),
 		//kubernetes.NewController(kubernetesService),
+		authentication.NewController(rbacService, jwtService, userService),
 	}
 	for _, ctrl := range controllers {
 		ctrl.RegisterRoute(api)

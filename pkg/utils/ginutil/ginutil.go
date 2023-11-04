@@ -13,3 +13,11 @@ func GetId(c *gin.Context) (id uint, ok bool) {
 	}
 	return uint(i), true
 }
+
+func GetToken(ctx *gin.Context) string {
+	tokenString := ctx.GetHeader("Authorization")
+	if len(tokenString) == 0 {
+		tokenString, _ = ctx.Cookie("token")
+	}
+	return tokenString
+}

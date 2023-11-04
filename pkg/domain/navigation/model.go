@@ -16,5 +16,5 @@ type Navigation struct {
 }
 
 func (n *Navigation) TableName() string {
-	return "navigation"
+	return "elune_navigation"
 }

@@ -6,8 +6,10 @@ import (
 )
 
 const (
-	EluneEnvDebug = "ELUNE_DEBUG"
-	EluneEnvPort  = "ELUNE_PORT"
+	EluneEnvDebug          = "ELUNE_DEBUG"
+	EluneEnvPort           = "ELUNE_PORT"
+	EluneEnvDatabaseDriver = "ELUNE_DATABASE_DRIVER"
+	EluneEnvDatabaseDSN    = "ELUNE_DATABASE_DSN"
 )
 
 type Config struct {
@@ -30,6 +32,10 @@ type Server struct {
 	Prefix      string `json:"prefix" yaml:"prefix" default:"/api/v1"`
 	Debug       bool   `json:"debug" yaml:"debug" default:"false"`
 	GracePeriod int    `json:"gracePeriod" yaml:"gracePeriod" default:"30"`
+
+	Issuer string        `json:"issuer" yaml:"issuer" default:"elune.docker.ac.cn"`
+	Secret string        `json:"secret" yaml:"secret" default:"Elune"`
+	Expire time.Duration `json:"expire" yaml:"expire" default:"720h"`
 }
 
 type Persistence struct {
@@ -50,6 +56,18 @@ type Database struct {
 type Cache struct {
 	Driver string `json:"driver" yaml:"driver" default:"memory"`
 	DSN    string `json:"dsn" yaml:"dsn" default:""`
+}
+
+func WithDatabaseDriver(driver string) Cfg {
+	return func(c *Config) {
+		c.Persistence.Database.Driver = driver
+	}
+}
+
+func WithDatabaseDsn(dsn string) Cfg {
+	return func(c *Config) {
+		c.Persistence.Database.DSN = dsn
+	}
 }
 
 func WithDebug(debug bool) Cfg {

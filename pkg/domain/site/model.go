@@ -11,5 +11,5 @@ type SiteConfig struct {
 }
 
 func (c *SiteConfig) TableName() string {
-	return "site_config"
+	return "elune_config"
 }

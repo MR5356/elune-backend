@@ -28,6 +28,15 @@ func main() {
 		}
 	}
 
+	// 是否定义数据库
+	if driver := os.Getenv(config.EluneEnvDatabaseDriver); len(driver) > 0 {
+		withs = append(withs, config.WithDatabaseDriver(driver))
+	}
+
+	if dsn := os.Getenv(config.EluneEnvDatabaseDSN); len(dsn) > 0 {
+		withs = append(withs, config.WithDatabaseDsn(dsn))
+	}
+
 	cfg := config.New(withs...)
 	logrus.Debugf("run with config: %+v", structutil.Struct2String(cfg))
 
