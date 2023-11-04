@@ -78,12 +78,12 @@ func (c *Controller) handleLogout(ctx *gin.Context) {
 	response.Success(ctx, nil)
 }
 
-func (c *Controller) handleInfo(ctx *gin.Context) {
+func (c *Controller) handleUserInfo(ctx *gin.Context) {
 	tokenString := ginutil.GetToken(ctx)
 
 	user, err := c.jwtService.ParseToken(tokenString)
 	if err != nil {
-		response.Error(ctx, response.CodeParamError, err.Error())
+		response.Success(ctx, nil)
 	} else {
 		response.Success(ctx, user.Desensitization())
 	}
@@ -116,7 +116,7 @@ func (c *Controller) RegisterRoute(group *gin.RouterGroup) {
 	api := group.Group("/user")
 	api.POST("login", c.handleLogin)
 	api.DELETE("logout", c.handleLogout)
-	api.GET("info", c.handleInfo)
+	api.GET("info", c.handleUserInfo)
 	api.GET("role", c.handleGetUserRole)
 	api.GET("token/refresh", c.handleTokenNeedRefresh)
 	api.PUT("token/refresh", c.handleRefreshToken)
