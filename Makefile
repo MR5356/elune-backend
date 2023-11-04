@@ -7,7 +7,7 @@ VERSION ?= $(shell git symbolic-ref --short -q HEAD)-$(shell git rev-parse --sho
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-16s\033[0m %s\n", $$1, $$2}'
 
-build: clean deps test ## Build the project
+build: clean deps ## Build the project
 	go build -ldflags "-s -w" -o bin/$(NAME)
 
 test: deps ## Execute tests

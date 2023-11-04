@@ -12,5 +12,6 @@ RUN make build
 FROM alpine:3.18
 WORKDIR /app
 COPY --from=builder /build/bin .
+COPY config ./config
 EXPOSE 80
 ENTRYPOINT ["/app/elune-backend"]
