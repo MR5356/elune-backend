@@ -94,7 +94,7 @@ func (c *Controller) handleTokenNeedRefresh(ctx *gin.Context) {
 
 	need, err := c.jwtService.GetNeedRefreshToken(tokenString)
 	if err != nil {
-		response.Error(ctx, response.CodeParamError, err.Error())
+		response.Success(ctx, map[string]bool{"need": false})
 	} else {
 		response.Success(ctx, map[string]bool{"need": need})
 	}
