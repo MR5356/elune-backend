@@ -41,6 +41,20 @@ func (s *Service) SetKey(key string, value string) error {
 	}
 }
 
+func (s *Service) SetKeyIfNotExist(key string, value string) error {
+	if len(key) == 0 {
+		return errors.New("key cannot be empty")
+	}
+	_, err := s.persistence.Detail(&SiteConfig{Key: key})
+	if err != nil {
+		err := s.persistence.Insert(&SiteConfig{Key: key, Value: value})
+		return err
+	} else {
+		return nil
+	}
+
+}
+
 func (s *Service) Initialize() error {
 	err := s.persistence.DB.AutoMigrate(&SiteConfig{})
 	if err != nil {
@@ -53,13 +67,13 @@ func (s *Service) Initialize() error {
 		{Key: "logo", Value: "/logo.svg"},
 		{Key: "favicon", Value: "/favicon.ico"},
 		{Key: "copyright", Value: "© 2022 Elune"},
-		{Key: "beian", Value: "冀公网安备 13112202000250号"},
-		{Key: "beianMiit", Value: "冀ICP备20003324号-3"},
+		{Key: "beian", Value: ""},
+		{Key: "beianMiit", Value: ""},
 		{Key: "kubeconfig", Value: ""},
 	}
 
 	for _, siteConfig := range defaultSiteConfigs {
-		_ = s.persistence.Insert(siteConfig)
+		_ = s.SetKeyIfNotExist(siteConfig.Key, siteConfig.Value)
 	}
 	return nil
 }
