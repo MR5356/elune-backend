@@ -24,6 +24,14 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
+environment:
+  - name: "ELUNE_DATABASE_DSN"
+    value: "host=postgresql-hl user=elune password=Mr_960612 dbname=elune port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+  - name: "ELUNE_DATABASE_DRIVER"
+    value: "postgres"
+  - name: "ELUNE_DEBUG"
+    value: "true"
+
 podAnnotations: {}
 
 podSecurityContext: {}
