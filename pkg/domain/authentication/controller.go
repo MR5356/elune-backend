@@ -55,7 +55,7 @@ func (c *Controller) handleLogin(ctx *gin.Context) {
 
 	user, err := c.userService.persistence.Detail(&User{Username: username})
 	if err != nil {
-		response.Error(ctx, response.CodeParamError, err.Error())
+		response.Error(ctx, response.CodeParamError, "用户不存在")
 		return
 	}
 
