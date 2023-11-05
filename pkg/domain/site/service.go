@@ -70,6 +70,7 @@ func (s *Service) Initialize() error {
 		{Key: "beian", Value: ""},
 		{Key: "beianMiit", Value: ""},
 		{Key: "kubeconfig", Value: ""},
+		{Key: "menus", Value: "[]"},
 	}
 
 	for _, siteConfig := range defaultSiteConfigs {
