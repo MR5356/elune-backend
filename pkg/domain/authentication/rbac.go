@@ -61,7 +61,7 @@ func (s *RBACService) Initialize() error {
 	// 默认角色
 	_, _ = s.enforcer.AddRoleForUser("admin", "administrators")
 	_, _ = s.enforcer.AddRoleForUser("guest", "users")
-	_, _ = s.enforcer.AddRoleForUser("unknown", "users")
+	_, _ = s.enforcer.AddRoleForUser("unknown", "guests")
 
 	// 默认权限
 	policies := [][]string{
@@ -72,7 +72,13 @@ func (s *RBACService) Initialize() error {
 			"users", "*", "GET",
 		},
 		{
+			"guests", "*", "GET",
+		},
+		{
 			"users", "/user/*", "*",
+		},
+		{
+			"users", "/navigation/*", "*",
 		},
 	}
 
