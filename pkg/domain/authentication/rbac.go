@@ -55,13 +55,11 @@ func (s *RBACService) HasRoleForUser(user, obj, role string) (bool, error) {
 }
 
 func (s *RBACService) Initialize() error {
+	s.db.Exec("DELETE FROM casbin_rule")
 	err := s.enforcer.LoadPolicy()
 	if err != nil {
 		return err
 	}
-
-	s.db.Exec("DELETE FROM casbin_rule")
-
 	// 默认角色
 	_, _ = s.enforcer.AddRoleForUser("admin", "administrators")
 	_, _ = s.enforcer.AddRoleForUser("guest", "users")
