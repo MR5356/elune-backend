@@ -9,6 +9,7 @@ import (
 
 type RBACService struct {
 	enforcer *casbin.Enforcer
+	db       *gorm.DB
 }
 
 func NewRBACService(db *gorm.DB) (*RBACService, error) {
@@ -24,6 +25,7 @@ func NewRBACService(db *gorm.DB) (*RBACService, error) {
 
 	return &RBACService{
 		enforcer: enforcer,
+		db:       db,
 	}, nil
 }
 
@@ -57,6 +59,8 @@ func (s *RBACService) Initialize() error {
 	if err != nil {
 		return err
 	}
+
+	s.db.Exec("DELETE FROM casbin_rule")
 
 	// 默认角色
 	_, _ = s.enforcer.AddRoleForUser("admin", "administrators")
