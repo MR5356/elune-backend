@@ -53,7 +53,8 @@ func (c *Controller) handleUpdateUserPassword(ctx *gin.Context) {
 
 		password := json["password"]
 
-		err = c.userService.persistence.Update(&User{ID: user.ID}, structutil.Struct2Map(&User{Password: password}))
+		user.Password = password
+		err = c.userService.persistence.Update(&User{ID: user.ID}, structutil.Struct2Map(user))
 		if err != nil {
 			response.Error(ctx, response.CodeUnknownError, err.Error())
 		} else {
