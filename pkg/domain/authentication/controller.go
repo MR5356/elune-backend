@@ -51,7 +51,12 @@ func (c *Controller) handleUpdateUserPassword(ctx *gin.Context) {
 			return
 		}
 
+		oldPassword := json["oldPassword"]
 		password := json["password"]
+		if oldPassword != user.Password {
+			response.Error(ctx, response.CodeParamError, "原密码错误")
+			return
+		}
 
 		user.Password = password
 		err = c.userService.persistence.Update(&User{ID: user.ID}, structutil.Struct2Map(user))
