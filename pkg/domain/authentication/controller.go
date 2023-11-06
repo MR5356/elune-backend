@@ -63,7 +63,14 @@ func (c *Controller) handleUpdateUserPassword(ctx *gin.Context) {
 		if err != nil {
 			response.Error(ctx, response.CodeUnknownError, err.Error())
 		} else {
-			response.Success(ctx, nil)
+			token, err := c.jwtService.CreateToken(user)
+			if err != nil {
+				response.Error(ctx, response.CodeUnknownError, err.Error())
+				return
+			} else {
+				ctx.SetCookie("token", token, 0, "", "", false, false)
+				response.Success(ctx, map[string]string{"token": token})
+			}
 		}
 	}
 }
