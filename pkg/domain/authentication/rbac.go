@@ -80,6 +80,9 @@ func (s *RBACService) Initialize() error {
 			"users", "/user/*", "*",
 		},
 		{
+			"guests", "/user/*", "*",
+		},
+		{
 			"users", "/navigation/*", "*",
 		},
 	}
