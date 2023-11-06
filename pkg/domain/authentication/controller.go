@@ -3,6 +3,7 @@ package authentication
 import (
 	"github.com/MR5356/elune-backend/pkg/response"
 	"github.com/MR5356/elune-backend/pkg/utils/ginutil"
+	"github.com/MR5356/elune-backend/pkg/utils/structutil"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
@@ -32,6 +33,32 @@ func (c *Controller) handleRefreshToken(ctx *gin.Context) {
 		response.Error(ctx, response.CodeParamError, err.Error())
 	} else {
 		response.Success(ctx, map[string]string{"token": newTokenString})
+	}
+}
+
+func (c *Controller) handleUpdateUserPassword(ctx *gin.Context) {
+	tokenString := ginutil.GetToken(ctx)
+	user, err := c.jwtService.ParseToken(tokenString)
+	if err != nil {
+		ctx.SetCookie("token", "", 0, "", "", false, false)
+		response.Error(ctx, response.CodeUnknownError, "用户信息错误")
+		return
+	} else {
+		json := make(map[string]string)
+		err := ctx.BindJSON(&json)
+		if err != nil {
+			response.Error(ctx, response.CodeParamError, err.Error())
+			return
+		}
+
+		password := json["password"]
+
+		err = c.userService.persistence.Update(&User{ID: user.ID}, structutil.Struct2Map(&User{Password: password}))
+		if err != nil {
+			response.Error(ctx, response.CodeUnknownError, err.Error())
+		} else {
+			response.Success(ctx, nil)
+		}
 	}
 }
 
@@ -117,6 +144,7 @@ func (c *Controller) RegisterRoute(group *gin.RouterGroup) {
 	api.POST("login", c.handleLogin)
 	api.DELETE("logout", c.handleLogout)
 	api.GET("info", c.handleUserInfo)
+	api.PUT("password", c.handleUpdateUserPassword)
 	api.GET("role", c.handleGetUserRole)
 	api.GET("token/refresh", c.handleTokenNeedRefresh)
 	api.PUT("token/refresh", c.handleRefreshToken)
