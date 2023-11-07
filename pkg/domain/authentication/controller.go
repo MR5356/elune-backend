@@ -53,6 +53,7 @@ func (c *Controller) handleUpdateUserPassword(ctx *gin.Context) {
 
 		oldPassword := json["oldPassword"]
 		password := json["password"]
+		// TODO 和数据库对比，比较安全
 		if oldPassword != user.Password {
 			response.Error(ctx, response.CodeParamError, "原密码错误")
 			return

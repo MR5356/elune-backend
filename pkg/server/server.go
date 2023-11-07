@@ -7,6 +7,7 @@ import (
 	"github.com/MR5356/elune-backend/pkg/config"
 	"github.com/MR5356/elune-backend/pkg/controller"
 	"github.com/MR5356/elune-backend/pkg/domain/authentication"
+	"github.com/MR5356/elune-backend/pkg/domain/blog"
 	"github.com/MR5356/elune-backend/pkg/domain/navigation"
 	"github.com/MR5356/elune-backend/pkg/domain/site"
 	"github.com/MR5356/elune-backend/pkg/middleware"
@@ -105,6 +106,7 @@ func New(config *config.Config) (server *Server, err error) {
 		navigation.NewController(navigationService),
 		//kubernetes.NewController(kubernetesService),
 		authentication.NewController(rbacService, jwtService, userService),
+		blog.NewController(),
 	}
 	for _, ctrl := range controllers {
 		ctrl.RegisterRoute(api)
