@@ -8,9 +8,9 @@ type Navigation struct {
 	Href   string `json:"href"`
 	Logo   string `json:"logo"`
 	Desc   string `json:"desc"`
-	Parent uint   `json:"parent" default:"0"` // -1为parent
+	Parent uint   `json:"parent" default:"0"` // 0为parent
 	Order  int    `json:"order"`
-	Unique string `json:"-" gorm:"unique;not null"`
+	//Unique string `json:"-" gorm:"unique;not null"`
 
 	persistence.BaseModel
 }
