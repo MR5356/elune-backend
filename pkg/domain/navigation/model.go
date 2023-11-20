@@ -1,6 +1,8 @@
 package navigation
 
-import "github.com/MR5356/elune-backend/pkg/persistence"
+import (
+	"time"
+)
 
 type Navigation struct {
 	ID     uint   `json:"id" gorm:"autoIncrement;primaryKey"`
@@ -10,9 +12,10 @@ type Navigation struct {
 	Desc   string `json:"desc"`
 	Parent uint   `json:"parent" default:"0"` // 0为parent
 	Order  int    `json:"order"`
-	//Unique string `json:"-" gorm:"unique;not null"`
+	Unique string `json:"-" gorm:"unique;not null"`
 
-	persistence.BaseModel
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 func (n *Navigation) TableName() string {
