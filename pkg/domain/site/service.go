@@ -66,7 +66,7 @@ func (s *Service) Initialize() error {
 		{Key: "description", Value: "Website of Elune"},
 		{Key: "logo", Value: "/logo.svg"},
 		{Key: "favicon", Value: "/favicon.ico"},
-		{Key: "copyright", Value: "© 2022 Elune"},
+		{Key: "copyright", Value: "© 2023 Elune"},
 		{Key: "beian", Value: ""},
 		{Key: "beianMiit", Value: ""},
 		{Key: "kubeconfig", Value: ""},
