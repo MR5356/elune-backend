@@ -1,16 +1,16 @@
 package kubernetes
 
 import (
-	"github.com/MR5356/elune-backend/pkg/kubernetes/client"
+	client2 "github.com/MR5356/elune-backend/pkg/domain/kubernetes/client"
 	"github.com/sirupsen/logrus"
 )
 
 type Service struct {
-	client *client.Client
+	client *client2.Client
 }
 
 func NewService(config string) *Service {
-	c, err := client.New(config)
+	c, err := client2.New(config)
 	if err != nil {
 		logrus.Errorf("create kubernetes client error: %+v", err)
 		return nil
@@ -20,7 +20,7 @@ func NewService(config string) *Service {
 	}
 }
 
-func (s *Service) GetNodes() ([]client.NodeInfo, error) {
+func (s *Service) GetNodes() ([]client2.NodeInfo, error) {
 	return s.client.GetNodes()
 }
 
