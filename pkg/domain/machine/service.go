@@ -33,7 +33,14 @@ func (s *Service) AddGroup(group *Group) error {
 }
 
 func (s *Service) ListGroup() ([]*Group, error) {
-	return s.groupPersistence.List(&Group{})
+	res := make([]*Group, 0)
+	err := s.groupPersistence.DB.Preload("Machines").Find(&res, &Group{}).Error
+	for _, item := range res {
+		for _, m := range item.Machines {
+			m.HostInfo.Password = "******"
+		}
+	}
+	return res, err
 }
 
 func (s *Service) DeleteGroup(id uint) error {
@@ -69,6 +76,9 @@ func (s *Service) AddMachine(machine *Machine) error {
 func (s *Service) ListMachine() ([]*Machine, error) {
 	res := make([]*Machine, 0)
 	err := s.machinePersistence.DB.Joins("Group").Find(&res).Error
+	for _, item := range res {
+		item.HostInfo.Password = "******"
+	}
 	return res, err
 }
 

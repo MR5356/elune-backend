@@ -22,7 +22,7 @@ type Machine struct {
 type Group struct {
 	ID       uint       `json:"id" gorm:"autoIncrement;primaryKey"`
 	Title    string     `json:"title" gorm:"unique;not null"`
-	Machines []*Machine `json:"-" gorm:"foreignkey:GroupId"`
+	Machines []*Machine `json:"machines" gorm:"foreignkey:GroupId"`
 
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`

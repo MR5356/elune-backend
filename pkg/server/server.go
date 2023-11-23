@@ -8,6 +8,7 @@ import (
 	"github.com/MR5356/elune-backend/pkg/controller"
 	"github.com/MR5356/elune-backend/pkg/domain/authentication"
 	"github.com/MR5356/elune-backend/pkg/domain/blog"
+	"github.com/MR5356/elune-backend/pkg/domain/executor"
 	"github.com/MR5356/elune-backend/pkg/domain/machine"
 	"github.com/MR5356/elune-backend/pkg/domain/navigation"
 	"github.com/MR5356/elune-backend/pkg/domain/script"
@@ -84,6 +85,7 @@ func New(config *config.Config) (server *Server, err error) {
 	userService := authentication.NewService(db, cc)
 	scriptService := script.NewService(db, cc)
 	machineService := machine.NewService(db, cc)
+	execService := executor.NewService(db, cc)
 	//
 	//selfKubeconfig, _ := siteService.GetKey("kubeconfig")
 	//kubernetesService := kubernetes.NewService(selfKubeconfig)
@@ -97,6 +99,7 @@ func New(config *config.Config) (server *Server, err error) {
 		userService,
 		scriptService,
 		machineService,
+		execService,
 	}
 	for _, srv := range services {
 		err := srv.Initialize()
@@ -115,6 +118,7 @@ func New(config *config.Config) (server *Server, err error) {
 		blog.NewController(),
 		script.NewController(scriptService),
 		machine.NewController(machineService),
+		executor.NewController(execService),
 	}
 	for _, ctrl := range controllers {
 		ctrl.RegisterRoute(api)
