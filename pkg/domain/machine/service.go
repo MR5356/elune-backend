@@ -138,12 +138,12 @@ func (s *Service) checkMachine(machine *Machine) error {
 	err = json.Unmarshal([]byte(a.Data["log"].(map[string][]string)[hostInfo.String()][0]), metaInfo)
 	if err != nil {
 		metaInfo = &MetaInfo{
-			OS:       "centos",
-			Kernel:   "3.15.2",
-			Hostname: "hw",
-			Arch:     "amd64",
-			Cpu:      "2",
-			Mem:      "2048",
+			OS:       "unknown",
+			Kernel:   "unknown",
+			Hostname: "unknown",
+			Arch:     "unknown",
+			Cpu:      "unknown",
+			Mem:      "unknown",
 		}
 	}
 	// TODO 增加系统信息检测
