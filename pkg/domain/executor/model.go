@@ -15,3 +15,7 @@ type Record struct {
 
 	persistence.BaseModel
 }
+
+func (r *Record) TableName() string {
+	return "elune_records"
+}
