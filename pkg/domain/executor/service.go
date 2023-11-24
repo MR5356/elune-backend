@@ -13,7 +13,6 @@ import (
 	"github.com/MR5356/jietan/pkg/executor/api"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
-	"strconv"
 	"time"
 )
 
@@ -117,7 +116,7 @@ func (s *Service) StartNewJob(scriptId uint, machineId []uint, params string) (i
 		Script:      scriptInfo.Content,
 		Params:      params,
 		Host:        string(hostsStr),
-		Message:     "running",
+		Status:      "running",
 	}
 
 	logrus.Debugf("record: %+v", record)
@@ -135,20 +134,19 @@ func (s *Service) StartNewJob(scriptId uint, machineId []uint, params string) (i
 			"script": scriptInfo.Content,
 			"params": params,
 		})
+
 		errs, _ := json.Marshal(res.Data["error"])
 		log := res.Data["log"].(map[string][]string)
 		logStr, _ := json.Marshal(log)
 		record.Result = string(logStr)
-		record.Status = strconv.Itoa(int(res.Status))
+		if res.Status == 0 {
+			record.Status = "finished"
+		} else {
+			record.Status = "failed"
+		}
 		record.Message = res.Message
 		record.Error = string(errs)
 		err = s.recordPersistence.DB.Updates(record).Error
-		//err := s.recordPersistence.Update(&Record{ID: record.ID}, structutil.Struct2Map(&Record{
-		//	Result:  strings.Join(res.Data["log"].([]string), "\n"),
-		//	Status:  strconv.Itoa(int(res.Status)),
-		//	Message: res.Message,
-		//	Error:   string(errs),
-		//}))
 		if err != nil {
 			logrus.Errorf("更新记录入库失败1：%v \n%+v", err, record)
 		}
@@ -163,9 +161,6 @@ func (s *Service) StartNewJob(scriptId uint, machineId []uint, params string) (i
 				logStr, _ := json.Marshal(log)
 				record.Result = string(logStr)
 				err = s.recordPersistence.DB.Updates(record).Error
-				//err := s.recordPersistence.Update(&Record{ID: record.ID}, structutil.Struct2Map(&Record{
-				//	Result: strings.Join(job.exec.GetResult(api.ResultFieldLog, nil).([]string), "\n"),
-				//}))
 				if err != nil {
 					logrus.Errorf("更新记录入库失败：%v \n%+v", err, record)
 				}
