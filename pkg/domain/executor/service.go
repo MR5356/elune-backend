@@ -14,7 +14,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -82,6 +81,8 @@ func (s *Service) StartNewJob(scriptId uint, machineId []uint, params string) (i
 	}
 
 	hosts := make([]*api.HostInfo, 0)
+	recordHosts := make([]*api.HostInfo, 0)
+
 	logrus.Debugf("machineId: %+v", machineId)
 	if len(machineId) == 0 {
 		return "", errors.New("至少包含一台主机")
@@ -97,9 +98,15 @@ func (s *Service) StartNewJob(scriptId uint, machineId []uint, params string) (i
 			User:   m.HostInfo.Username,
 			Passwd: m.HostInfo.Password,
 		})
+		recordHosts = append(recordHosts, &api.HostInfo{
+			Host:   m.HostInfo.Host,
+			Port:   int(m.HostInfo.Port),
+			User:   m.HostInfo.Username,
+			Passwd: "******",
+		})
 	}
 
-	hostsStr, _ := json.Marshal(hosts)
+	hostsStr, _ := json.Marshal(recordHosts)
 
 	record := &Record{
 		ID:          id,
@@ -107,7 +114,7 @@ func (s *Service) StartNewJob(scriptId uint, machineId []uint, params string) (i
 		Script:      scriptInfo.Content,
 		Params:      params,
 		Host:        string(hostsStr),
-		Status:      "RUNNING",
+		Message:     "running",
 	}
 
 	logrus.Debugf("record: %+v", record)
@@ -126,11 +133,13 @@ func (s *Service) StartNewJob(scriptId uint, machineId []uint, params string) (i
 			"params": params,
 		})
 		errs, _ := json.Marshal(res.Data["error"])
-		record.Result = strings.Join(res.Data["log"].([]string), "\n")
+		log := res.Data["log"].(map[string][]string)
+		logStr, _ := json.Marshal(log)
+		record.Result = string(logStr)
 		record.Status = strconv.Itoa(int(res.Status))
 		record.Message = res.Message
 		record.Error = string(errs)
-		err := s.recordPersistence.DB.Updates(record)
+		err = s.recordPersistence.DB.Updates(record).Error
 		//err := s.recordPersistence.Update(&Record{ID: record.ID}, structutil.Struct2Map(&Record{
 		//	Result:  strings.Join(res.Data["log"].([]string), "\n"),
 		//	Status:  strconv.Itoa(int(res.Status)),
@@ -138,7 +147,7 @@ func (s *Service) StartNewJob(scriptId uint, machineId []uint, params string) (i
 		//	Error:   string(errs),
 		//}))
 		if err != nil {
-			logrus.Errorf("更新记录入库失败：%v \n%+v", err, record)
+			logrus.Errorf("更新记录入库失败1：%v \n%+v", err, record)
 		}
 		delete(s.jobMap, id)
 	}()
@@ -147,8 +156,10 @@ func (s *Service) StartNewJob(scriptId uint, machineId []uint, params string) (i
 	go func() {
 		for {
 			if job, ok := s.jobMap[id]; ok {
-				record.Result = strings.Join(job.exec.GetResult(api.ResultFieldLog, nil).([]string), "\n")
-				err := s.recordPersistence.DB.Updates(record)
+				log := job.exec.GetResult(api.ResultFieldLog, nil).(map[string][]string)
+				logStr, _ := json.Marshal(log)
+				record.Result = string(logStr)
+				err = s.recordPersistence.DB.Updates(record).Error
 				//err := s.recordPersistence.Update(&Record{ID: record.ID}, structutil.Struct2Map(&Record{
 				//	Result: strings.Join(job.exec.GetResult(api.ResultFieldLog, nil).([]string), "\n"),
 				//}))
@@ -172,12 +183,14 @@ func (s *Service) StopJob(id string) error {
 	return nil
 }
 
-func (s *Service) GetJobLog(id string) ([]string, error) {
+func (s *Service) GetJobLog(id string) (map[string][]string, error) {
 	record, err := s.recordPersistence.Detail(&Record{ID: id})
 	if err != nil {
 		return nil, err
 	}
-	return strings.Split(record.Result, "\n"), nil
+	log := make(map[string][]string)
+	err = json.Unmarshal([]byte(record.Result), &log)
+	return log, err
 }
 
 func (s *Service) Initialize() error {

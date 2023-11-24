@@ -34,7 +34,7 @@ func (s *Service) AddScript(script *Script) error {
 
 func (s *Service) ListScript() ([]*Script, error) {
 	res := make([]*Script, 0)
-	err := s.scriptPersistence.DB.Joins("Type").Find(&res).Error
+	err := s.scriptPersistence.DB.Order("created_at").Joins("Type").Find(&res).Error
 	return res, err
 }
 

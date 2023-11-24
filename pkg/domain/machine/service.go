@@ -1,12 +1,16 @@
 package machine
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/MR5356/elune-backend/pkg/persistence"
 	"github.com/MR5356/elune-backend/pkg/persistence/cache"
 	"github.com/MR5356/elune-backend/pkg/persistence/database"
 	"github.com/MR5356/elune-backend/pkg/utils/structutil"
+	"github.com/MR5356/jietan/pkg/executor"
+	"github.com/MR5356/jietan/pkg/executor/api"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 	"time"
@@ -114,15 +118,35 @@ func (s *Service) checkMachine(machine *Machine) error {
 		return err
 	}
 	defer sshClient.Close()
-	// TODO 增加系统信息检测
-	machine.MetaInfo = MetaInfo{
-		OS:       "centos",
-		Kernel:   "3.15.2",
-		Hostname: "hw",
-		Arch:     "amd64",
-		Cpu:      "2",
-		Mem:      "2048",
+	exec := executor.GetExecutor("remote")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	a := exec.Execute(ctx, &api.ExecuteParams{
+		"hosts": []*api.HostInfo{
+			{
+				Host:   "toodo.fun",
+				Port:   22,
+				User:   "root",
+				Passwd: "Mr_960612",
+			},
+		},
+		"script": "#!/bin/bash\n\n# 系统信息\nos=$(cat /etc/os-release | grep ^ID= | cut -d '=' -f2)\nos=${os//\\\"/} # 去掉双引号\nkernel=$(uname -r)\nhostname=$(hostname)\narch=$(uname -m)\n\n# 硬件信息\ncpu_count=$(lscpu | grep \"^CPU(s)\" | cut -d ':' -f2 | awk '{$1=$1;print}')\nmem_size=$(free -h | grep Mem | awk '{print $2}')\n\n# 构建JSON\njson=\"{\\\"os\\\": \\\"$os\\\",\n        \\\"kernel\\\": \\\"$kernel\\\",\n        \\\"hostname\\\": \\\"$hostname\\\",\n        \\\"arch\\\": \\\"$arch\\\",\n        \\\"cpu\\\": \\\"$cpu_count\\\",\n        \\\"mem\\\": \\\"$mem_size\\\"}\"\n\n# 输出\necho $json",
+		"params": "",
+	})
+	metaInfo := new(MetaInfo)
+	err = json.Unmarshal([]byte(a.Data["log"].([]string)[0]), metaInfo)
+	if err != nil {
+		metaInfo = &MetaInfo{
+			OS:       "centos",
+			Kernel:   "3.15.2",
+			Hostname: "hw",
+			Arch:     "amd64",
+			Cpu:      "2",
+			Mem:      "2048",
+		}
 	}
+	// TODO 增加系统信息检测
+	machine.MetaInfo = *metaInfo
 	return err
 }
 
