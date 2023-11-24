@@ -112,29 +112,30 @@ func (s *Service) checkMachine(machine *Machine) error {
 		User:            machine.HostInfo.Username,
 		Auth:            []ssh.AuthMethod{ssh.Password(machine.HostInfo.Password)},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-		Timeout:         time.Second * 10,
+		Timeout:         time.Second * 20,
 	})
 	if err != nil {
 		return err
 	}
 	defer sshClient.Close()
 	exec := executor.GetExecutor("remote")
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	defer cancel()
+	hostInfo := &api.HostInfo{
+		Host:   machine.HostInfo.Host,
+		Port:   int(machine.HostInfo.Port),
+		User:   machine.HostInfo.Username,
+		Passwd: machine.HostInfo.Password,
+	}
 	a := exec.Execute(ctx, &api.ExecuteParams{
 		"hosts": []*api.HostInfo{
-			{
-				Host:   "toodo.fun",
-				Port:   22,
-				User:   "root",
-				Passwd: "Mr_960612",
-			},
+			hostInfo,
 		},
 		"script": "#!/bin/bash\n\n# 系统信息\nos=$(cat /etc/os-release | grep ^ID= | cut -d '=' -f2)\nos=${os//\\\"/} # 去掉双引号\nkernel=$(uname -r)\nhostname=$(hostname)\narch=$(uname -m)\n\n# 硬件信息\ncpu_count=$(lscpu | grep \"^CPU(s)\" | cut -d ':' -f2 | awk '{$1=$1;print}')\nmem_size=$(free -h | grep Mem | awk '{print $2}')\n\n# 构建JSON\njson=\"{\\\"os\\\": \\\"$os\\\",\n        \\\"kernel\\\": \\\"$kernel\\\",\n        \\\"hostname\\\": \\\"$hostname\\\",\n        \\\"arch\\\": \\\"$arch\\\",\n        \\\"cpu\\\": \\\"$cpu_count\\\",\n        \\\"mem\\\": \\\"$mem_size\\\"}\"\n\n# 输出\necho $json",
 		"params": "",
 	})
 	metaInfo := new(MetaInfo)
-	err = json.Unmarshal([]byte(a.Data["log"].([]string)[0]), metaInfo)
+	err = json.Unmarshal([]byte(a.Data["log"].(map[string][]string)[hostInfo.String()][0]), metaInfo)
 	if err != nil {
 		metaInfo = &MetaInfo{
 			OS:       "centos",
