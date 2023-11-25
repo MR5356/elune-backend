@@ -12,6 +12,8 @@ github.com/MR5356/jietan v0.0.0-20231124052249-477aae6a55d2 h1:XlgzLupNJEf7BP47B
 github.com/MR5356/jietan v0.0.0-20231124052249-477aae6a55d2/go.mod h1:g/xGuksBiy5A40nc5lQWOwxAx5LvISFlYf1t5Y7g2BM=
 github.com/MR5356/jietan v0.0.0-20231124084328-39cd29eab4a5 h1:t+ZpJYUl7Msbq1U2ybsswA3gv5jO00Q7zxIRUTFbcMc=
 github.com/MR5356/jietan v0.0.0-20231124084328-39cd29eab4a5/go.mod h1:g/xGuksBiy5A40nc5lQWOwxAx5LvISFlYf1t5Y7g2BM=
+github.com/MR5356/jietan v0.0.0-20231125065246-12c303420457 h1:HL9yzsac2t4LAKg/i6Q3C2pwbSPrfxTbgFWJtrCF+X4=
+github.com/MR5356/jietan v0.0.0-20231125065246-12c303420457/go.mod h1:g/xGuksBiy5A40nc5lQWOwxAx5LvISFlYf1t5Y7g2BM=
 github.com/agiledragon/gomonkey/v2 v2.2.0 h1:QJWqpdEhGV/JJy70sZ/LDnhbSlMrqHAWHcNOjz1kyuI=
 github.com/agiledragon/gomonkey/v2 v2.2.0/go.mod h1:ap1AmDzcVOAz1YpeJ3TCzIgstoaWLA6jbbgxfB4w2iY=
 github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394 h1:OYA+5W64v3OgClL+IrOD63t4i/RW7RqrAVl9LTZ9UqQ=

@@ -3,7 +3,7 @@ module github.com/MR5356/elune-backend
 go 1.21
 
 require (
-	github.com/MR5356/jietan v0.0.0-20231124084328-39cd29eab4a5
+	github.com/MR5356/jietan v0.0.0-20231125065246-12c303420457
 	github.com/casbin/casbin/v2 v2.77.2
 	github.com/casbin/gorm-adapter/v3 v3.20.0
 	github.com/dustin/go-humanize v1.0.1
