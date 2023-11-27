@@ -1,10 +1,12 @@
 package authentication
 
 import (
+	"github.com/MR5356/elune-backend/pkg/utils/fileutil"
 	"github.com/casbin/casbin/v2"
 	gormadapter "github.com/casbin/gorm-adapter/v3"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"os"
 )
 
 type RBACService struct {
@@ -12,13 +14,28 @@ type RBACService struct {
 	db       *gorm.DB
 }
 
+const defaultRBACModel = "[request_definition]\nr = sub, obj, act\n\n[policy_definition]\np = sub, obj, act\n\n[role_definition]\ng = _, _\n\n[matchers]\nm = g(r.sub, p.sub) && keyMatch(r.obj, p.obj) && keyMatch(r.act, p.act)\n\n[policy_effect]\ne = some(where (p.eft == allow))"
+
 func NewRBACService(db *gorm.DB) (*RBACService, error) {
 	adapter, err := gormadapter.NewAdapterByDB(db)
 	if err != nil {
 		return nil, err
 	}
 
-	enforcer, err := casbin.NewEnforcer("config/rbac_model.conf", adapter)
+	// 判断模型是否存在，如果不存在则创建一个
+	modelPath := "config/rbac_model.conf"
+	_, err = os.Stat(modelPath)
+	if os.IsNotExist(err) {
+		err := os.MkdirAll("config", os.ModePerm)
+		if err != nil {
+			return nil, err
+		}
+		err = fileutil.WriteToFile(modelPath, []byte(defaultRBACModel))
+		if err != nil {
+			return nil, err
+		}
+	}
+	enforcer, err := casbin.NewEnforcer(modelPath, adapter)
 	if err != nil {
 		return nil, err
 	}

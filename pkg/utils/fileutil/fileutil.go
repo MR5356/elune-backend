@@ -51,3 +51,7 @@ func UnMarshalToAnyFromFile(filePath string, target any) error {
 	err = decoder.Decode(target)
 	return err
 }
+
+func WriteToFile(filename string, data []byte) error {
+	return os.WriteFile(filename, data, 0666)
+}
