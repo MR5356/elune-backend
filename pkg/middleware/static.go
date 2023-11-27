@@ -2,11 +2,13 @@ package middleware
 
 import (
 	"embed"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"path"
 	"strings"
+	"time"
 )
 
 func Static(prefix string, fs *StaticFileSystem) gin.HandlerFunc {
@@ -15,9 +17,27 @@ func Static(prefix string, fs *StaticFileSystem) gin.HandlerFunc {
 		fileServer = http.StripPrefix(prefix, fileServer)
 	}
 	return func(ctx *gin.Context) {
+		logrus.Debugf("prefix: %s, path: %s", prefix, ctx.Request.URL.Path)
 		if fs.Exists(prefix, ctx.Request.URL.Path) {
 			fileServer.ServeHTTP(ctx.Writer, ctx.Request)
 			ctx.Abort()
+		} else {
+			p := ctx.Request.URL.Path
+			pathHasAPI := strings.Contains(p, "/api")
+			if pathHasAPI {
+				return
+			} else {
+				adminFile, err := fs.Open("index.html")
+				if err != nil {
+					fmt.Println("文件不存在", ctx.Request.URL.Path)
+					return
+				}
+				defer adminFile.Close()
+				// 把文件返回
+				http.ServeContent(ctx.Writer, ctx.Request, "index.html", time.Now(), adminFile)
+				ctx.Abort()
+			}
+
 		}
 	}
 }
