@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"embed"
 	"errors"
 	"fmt"
 	"github.com/MR5356/elune-backend/pkg/config"
@@ -33,6 +34,9 @@ type Server struct {
 	config *config.Config
 }
 
+//go:embed static
+var fs embed.FS
+
 func New(config *config.Config) (server *Server, err error) {
 	if config.Server.Debug {
 		gin.SetMode(gin.DebugMode)
@@ -48,6 +52,10 @@ func New(config *config.Config) (server *Server, err error) {
 		middleware.Recovery(),
 	)
 
+	// 前端代理接口
+	engine.Use(middleware.Static("/", middleware.NewStaticFileSystem(fs, "static")))
+
+	// 后端接口
 	api := engine.Group(config.Server.Prefix)
 
 	api.GET("/health", func(c *gin.Context) {

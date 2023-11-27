@@ -60,7 +60,7 @@ func (s *Service) StartNewJobWithMachineGroup(scriptId, machineGroupId uint, par
 
 func (s *Service) ListJob() ([]*Record, error) {
 	res := make([]*Record, 0)
-	err := s.recordPersistence.DB.Select("id, script_title, script, host, params, status, message, error").Order("created_at desc").Find(&res, &Record{}).Error
+	err := s.recordPersistence.DB.Select("id, script_title, script, host, params, status, message, error, created_at, updated_at").Order("created_at desc").Find(&res, &Record{}).Error
 	for _, item := range res {
 		item.Result = ""
 	}
