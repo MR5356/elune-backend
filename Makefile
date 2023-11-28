@@ -10,6 +10,9 @@ help:
 build: clean deps ## Build the project
 	go build -ldflags "-s -w" -o bin/$(NAME)
 
+build-bin: deps ## Build binary
+	go build -ldflags "-s -w" -o bin/$(NAME)-${GOOS}-${GOARCH}
+
 test: deps ## Execute tests
 	go test ./...
 
