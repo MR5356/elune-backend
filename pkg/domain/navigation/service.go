@@ -6,6 +6,7 @@ import (
 	"github.com/MR5356/elune-backend/pkg/persistence"
 	"github.com/MR5356/elune-backend/pkg/persistence/cache"
 	"github.com/MR5356/elune-backend/pkg/persistence/database"
+	"github.com/MR5356/elune-backend/pkg/utils/imgutil"
 	"github.com/MR5356/elune-backend/pkg/utils/structutil"
 	"github.com/sirupsen/logrus"
 )
@@ -21,7 +22,22 @@ func NewService(database *database.Database, cache *cache.Cache) *Service {
 }
 
 func (s *Service) ListNavigation() ([]*Navigation, error) {
-	return s.persistence.List(&Navigation{})
+	res, err := s.persistence.List(&Navigation{})
+	if err != nil {
+		return nil, err
+	}
+	for _, item := range res {
+		if len(item.Logo) == 0 {
+			continue
+		}
+		data, err := imgutil.ImgLinkToBase64(item.Logo)
+		if err == nil {
+			item.Logo = data
+		} else {
+			logrus.Errorf("imgutil.ImgLinkToBase64 err: %v", err)
+		}
+	}
+	return res, nil
 }
 
 func (s *Service) AddNavigation(navigation *Navigation) error {
