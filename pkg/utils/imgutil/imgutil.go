@@ -7,6 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"io"
 	"net/http"
+	"time"
 )
 
 var miniTypeToBasePrefix = map[string]string{
@@ -23,7 +24,8 @@ var miniTypeToBasePrefix = map[string]string{
 func ImgLinkToBase64(imgUrl string) (string, error) {
 	logrus.Debugf("imgUrl: %s", imgUrl)
 	//获取远端图片
-	res, err := http.Get(imgUrl)
+	client := http.Client{Timeout: time.Second * 10}
+	res, err := client.Get(imgUrl)
 	if err != nil {
 		return "", err
 	}
