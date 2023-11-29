@@ -11,6 +11,8 @@ spec:
   selector:
     matchLabels:
       {{- include "elune-backend.selectorLabels" . | nindent 6 }}
+  strategy:
+    {{- toYaml .Values.strategy | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
