@@ -33,5 +33,11 @@ func (s *Service) Initialize() error {
 		Password: "guest",
 		Email:    "guest@example.com",
 	})
+	_ = s.persistence.Insert(&User{
+		ID:       3,
+		Username: "devops",
+		Password: "devops",
+		Email:    "devops@example.com",
+	})
 	return nil
 }

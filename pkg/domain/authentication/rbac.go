@@ -79,6 +79,7 @@ func (s *RBACService) Initialize() error {
 	}
 	// 默认角色
 	_, _ = s.enforcer.AddRoleForUser("admin", "administrators")
+	_, _ = s.enforcer.AddRoleForUser("devops", "devops")
 	_, _ = s.enforcer.AddRoleForUser("guest", "users")
 	_, _ = s.enforcer.AddRoleForUser("unknown", "guests")
 
@@ -86,6 +87,27 @@ func (s *RBACService) Initialize() error {
 	policies := [][]string{
 		{
 			"administrators", "*", "*",
+		},
+		{
+			"devops", "*", "GET",
+		},
+		{
+			"devops", "/user/*", "*",
+		},
+		{
+			"devops", "/navigation/*", "*",
+		},
+		{
+			"devops", "/script/*", "*",
+		},
+		{
+			"devops", "/machine/*", "*",
+		},
+		{
+			"devops", "/execute/*", "*",
+		},
+		{
+			"devops", "/cron/*", "*",
 		},
 		{
 			"users", "*", "GET",
