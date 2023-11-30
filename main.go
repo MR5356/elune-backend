@@ -38,6 +38,15 @@ func main() {
 		withs = append(withs, config.WithDatabaseDsn(dsn))
 	}
 
+	// 是否定义Cache
+	if driver := os.Getenv(config.EluneEnvCacheDriver); len(driver) > 0 {
+		withs = append(withs, config.WithCacheDriver(driver))
+	}
+
+	if dsn := os.Getenv(config.EluneEnvCacheDSN); len(dsn) > 0 {
+		withs = append(withs, config.WithCacheDsn(dsn))
+	}
+
 	cfg := config.New(withs...)
 	logrus.Debugf("run with config: %+v", structutil.Struct2String(cfg))
 

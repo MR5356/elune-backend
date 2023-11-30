@@ -10,5 +10,9 @@ type Cache interface {
 }
 
 func New(cfg *config.Config) (cache Cache, err error) {
-	return NewMemoryCache(), nil
+	if cfg.Persistence.Cache.Driver == "redis" {
+		return NewRedisCache("redis://localhost:6379?protocol=3")
+	} else {
+		return NewMemoryCache(), nil
+	}
 }

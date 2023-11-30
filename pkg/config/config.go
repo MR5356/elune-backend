@@ -10,6 +10,8 @@ const (
 	EluneEnvPort           = "ELUNE_PORT"
 	EluneEnvDatabaseDriver = "ELUNE_DATABASE_DRIVER"
 	EluneEnvDatabaseDSN    = "ELUNE_DATABASE_DSN"
+	EluneEnvCacheDriver    = "ELUNE_CACHE_DRIVER"
+	EluneEnvCacheDSN       = "ELUNE_CACHE_DSN"
 )
 
 type Config struct {
@@ -55,7 +57,19 @@ type Database struct {
 
 type Cache struct {
 	Driver string `json:"driver" yaml:"driver" default:"memory"`
-	DSN    string `json:"dsn" yaml:"dsn" default:""`
+	DSN    string `json:"dsn" yaml:"dsn" default:"redis://localhost:6379?protocol=3"`
+}
+
+func WithCacheDriver(driver string) Cfg {
+	return func(c *Config) {
+		c.Persistence.Cache.Driver = driver
+	}
+}
+
+func WithCacheDsn(dsn string) Cfg {
+	return func(c *Config) {
+		c.Persistence.Cache.DSN = dsn
+	}
 }
 
 func WithDatabaseDriver(driver string) Cfg {
