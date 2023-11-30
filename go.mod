@@ -4,6 +4,7 @@ go 1.21
 
 require (
 	github.com/MR5356/jietan v0.0.0-20231130022637-d3683784c4e8
+	github.com/antonfisher/nested-logrus-formatter v1.3.1
 	github.com/asaskevich/EventBus v0.0.0-20200907212545-49d423059eef
 	github.com/casbin/casbin/v2 v2.77.2
 	github.com/casbin/gorm-adapter/v3 v3.20.0

@@ -134,6 +134,7 @@ func New(config *config.Config) (server *Server, err error) {
 		machine.NewController(machineService),
 		executor.NewController(execService),
 		syncer.NewController(syncerService),
+		cron.NewController(cronService),
 	}
 	for _, ctrl := range controllers {
 		ctrl.RegisterRoute(api)

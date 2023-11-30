@@ -38,12 +38,16 @@ func (s *Service) Initialize() error {
 		Title: "git",
 	})
 
-	err = cron.GetTaskFactory().AddTask("image-sync", task.NewImageSyncTask(s.database, s.cache))
+	err = cron.GetTaskFactory().AddTask("image-sync", func() cron.Task {
+		return task.NewImageSyncTask(s.database, s.cache)
+	})
 	if err != nil {
 		return err
 	}
 
-	err = cron.GetTaskFactory().AddTask("git-sync", task.NewGitSyncTask())
+	err = cron.GetTaskFactory().AddTask("git-sync", func() cron.Task {
+		return task.NewGitSyncTask()
+	})
 	if err != nil {
 		return err
 	}

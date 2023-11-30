@@ -29,29 +29,18 @@ func GetTaskFactory() *TaskFactory {
 	return taskFactory
 }
 
-func (tf *TaskFactory) GetTask(taskName string) (Task, error) {
-	if task, ok := tf.tasks.Load(taskName); ok {
-		return task.(Task), nil
+func (tf *TaskFactory) GetTask(taskName string) (func() Task, error) {
+	if f, ok := tf.tasks.Load(taskName); ok {
+		return f.(func() Task), nil
 	}
-	return nil, errors.New("task not found")
+	return nil, errors.New("taskFunc not found")
 }
 
-func (tf *TaskFactory) AddTask(taskName string, task Task) error {
+func (tf *TaskFactory) AddTask(taskName string, f func() Task) error {
 	if _, ok := tf.tasks.Load(taskName); ok {
 		return errors.New("task already exists")
 	}
-	tf.tasks.Store(taskName, task)
+	tf.tasks.Store(taskName, f)
 	logrus.Infof("register task %s", taskName)
 	return nil
-}
-
-type TestTask struct {
-}
-
-func (t *TestTask) Run() {
-	logrus.Infof("test task run")
-}
-
-func (t *TestTask) SetParams(params string) {
-
 }

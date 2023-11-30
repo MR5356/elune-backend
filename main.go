@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/MR5356/elune-backend/pkg/config"
+	_ "github.com/MR5356/elune-backend/pkg/log"
 	"github.com/MR5356/elune-backend/pkg/server"
 	"github.com/MR5356/elune-backend/pkg/utils/structutil"
 	"github.com/sirupsen/logrus"
