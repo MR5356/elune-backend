@@ -62,9 +62,6 @@ func (t *Task) Run() {
 	} else {
 		id, err = t.service.StartNewJob(params.ScriptID, params.MachineIds, params.Params)
 	}
-	if err != nil {
-		logrus.Errorf("start new job error: %v", err)
-	}
 	record := &cron.Record{
 		CronId:   t.cronInfo.ID,
 		Title:    t.cronInfo.Title,
@@ -74,22 +71,37 @@ func (t *Task) Run() {
 		Status:   cron.TaskRunning,
 		Log:      "",
 	}
+
+	if err != nil {
+		logrus.Errorf("start new job error: %v", err)
+		record.Status = cron.TaskFailed
+	}
+
 	err = t.cronRecordPersistence.Insert(record)
 	if err != nil {
 		logrus.Errorf("insert record error: %v", err)
 		return
 	}
 	go func() {
-		log, err := t.service.GetJobLog(id)
+		detail, err := t.service.recordPersistence.Detail(&Record{ID: id})
 		if err != nil {
 			logrus.Errorf("get job log error: %v", err)
-		} else {
-			logStr, _ := json.Marshal(log)
-			record.Log = string(logStr)
+			return
+		}
+
+		record.Log = detail.Result
+		err = t.cronRecordPersistence.DB.Updates(record).Error
+		if err != nil {
+			logrus.Warnf("update record error: %v", err)
+		}
+
+		if detail.Status != taskStatusRunnig {
+			record.Status = cron.TaskFinished
 			err = t.cronRecordPersistence.DB.Updates(record).Error
 			if err != nil {
 				logrus.Warnf("update record error: %v", err)
 			}
+			return
 		}
 		time.Sleep(time.Second)
 	}()

@@ -86,6 +86,29 @@ func (c *Controller) handleDeleteCron(ctx *gin.Context) {
 	}
 }
 
+func (c *Controller) handlePageCronRecord(ctx *gin.Context) {
+	pageNumStr := ctx.Query("pageNum")
+	pageSizeStr := ctx.Query("pageSize")
+	pageNum, err := strconv.Atoi(pageNumStr)
+	if err != nil {
+		pageNum = 1
+	}
+	pageSize, err := strconv.Atoi(pageSizeStr)
+	if err != nil {
+		pageSize = 10
+	}
+	if pageSize > 50 {
+		pageSize = 50
+	}
+	res, err := c.service.PageCronRecord(pageNum, pageSize)
+	if err != nil {
+		response.Error(ctx, response.CodeParamError, err.Error())
+		return
+	} else {
+		response.Success(ctx, res)
+	}
+}
+
 func (c *Controller) RegisterRoute(group *gin.RouterGroup) {
 	api := group.Group("/cron")
 	api.GET("/list", c.handleListCron)
@@ -93,4 +116,5 @@ func (c *Controller) RegisterRoute(group *gin.RouterGroup) {
 	api.PUT("/disable/:id", c.handleSetDisableCron)
 	api.POST("/add", c.handleAddCron)
 	api.DELETE("/delete/:id", c.handleDeleteCron)
+	api.GET("/record", c.handlePageCronRecord)
 }

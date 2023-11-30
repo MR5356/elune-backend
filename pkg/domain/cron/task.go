@@ -9,6 +9,7 @@ import (
 const (
 	TaskRunning  = "running"
 	TaskFinished = "finished"
+	TaskFailed   = "failed"
 )
 
 var (

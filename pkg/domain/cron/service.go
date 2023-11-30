@@ -109,7 +109,10 @@ func (s *Service) addCron(cron *Cron, cronString, taskName, params string) error
 	}
 	s.jobMap.Store(cron.ID, jobId)
 	return nil
+}
 
+func (s *Service) PageCronRecord(pageNum, pageSize int) (*persistence.Pager[*Record], error) {
+	return s.recordPersistence.Page(&Record{}, int64(pageNum), int64(pageSize))
 }
 
 func (s *Service) Initialize() error {

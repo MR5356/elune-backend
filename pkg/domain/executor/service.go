@@ -17,6 +17,12 @@ import (
 	"time"
 )
 
+const (
+	taskStatusRunnig   = "running"
+	taskStatusFinished = "finished"
+	taskStatusFailed   = "failed"
+)
+
 type Service struct {
 	scriptPersistence       *persistence.Persistence[*script.Script]
 	scriptTypePersistence   *persistence.Persistence[*script.Type]
@@ -123,7 +129,7 @@ func (s *Service) StartNewJob(scriptId uint, machineId []uint, params string) (i
 		Script:      scriptInfo.Content,
 		Params:      params,
 		Host:        string(hostsStr),
-		Status:      "running",
+		Status:      taskStatusRunnig,
 	}
 
 	logrus.Debugf("record: %+v", record)
@@ -147,9 +153,9 @@ func (s *Service) StartNewJob(scriptId uint, machineId []uint, params string) (i
 		logStr, _ := json.Marshal(log)
 		record.Result = string(logStr)
 		if res.Status == 0 {
-			record.Status = "finished"
+			record.Status = taskStatusFinished
 		} else {
-			record.Status = "failed"
+			record.Status = taskStatusFailed
 		}
 		record.Message = res.Message
 		record.Error = string(errs)
