@@ -49,7 +49,7 @@ func (s *Persistence[T]) Detail(entity T) (res T, err error) {
 
 func (s *Persistence[T]) List(entity T) (res []T, err error) {
 	logrus.Debugf("List: %+v", entity)
-	err = s.DB.Find(&res, entity).Error
+	err = s.DB.Order("updated_at desc").Find(&res, entity).Error
 	return
 }
 
@@ -62,7 +62,7 @@ func (s *Persistence[T]) Page(entity T, page, size int64) (res *Pager[T], err er
 	if res.Total == 0 {
 		res.Data = make([]T, 0)
 	}
-	err = s.DB.Model(&entity).Where(entity).Scopes(Pagination(res)).Find(&res.Data).Error
+	err = s.DB.Model(&entity).Order("updated_at desc").Where(entity).Scopes(Pagination(res)).Find(&res.Data).Error
 	return res, err
 }
 
