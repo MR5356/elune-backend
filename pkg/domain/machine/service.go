@@ -48,7 +48,7 @@ func (s *Service) ListGroup() ([]*Group, error) {
 }
 
 func (s *Service) DeleteGroup(id uint) error {
-	err := s.machinePersistence.Delete(&Machine{GroupId: id})
+	err := s.machinePersistence.DB.Where("group_id = ?", id).Delete(&Machine{GroupId: id}).Error
 	if err != nil {
 		return err
 	}
@@ -158,7 +158,7 @@ func (s *Service) Initialize() error {
 	}
 	_ = s.groupPersistence.Insert(&Group{
 		ID:    1,
-		Title: "未分组",
+		Title: "默认分组",
 	})
 	return nil
 }
