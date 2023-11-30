@@ -11,12 +11,17 @@ import (
 type Service struct {
 	scriptPersistence     *persistence.Persistence[*Script]
 	scriptTypePersistence *persistence.Persistence[*Type]
+
+	database *database.Database
+	cache    cache.Cache
 }
 
 func NewService(database *database.Database, cache cache.Cache) *Service {
 	return &Service{
 		scriptPersistence:     persistence.New(database, cache, &Script{}),
 		scriptTypePersistence: persistence.New(database, cache, &Type{}),
+		database:              database,
+		cache:                 cache,
 	}
 }
 

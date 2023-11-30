@@ -6,6 +6,11 @@ import (
 	"sync"
 )
 
+const (
+	TaskRunning  = "running"
+	TaskFinished = "finished"
+)
+
 var (
 	taskFactory *TaskFactory
 	once        sync.Once
@@ -14,6 +19,7 @@ var (
 type Task interface {
 	Run()
 	SetParams(params string)
+	SetCronInfo(cron *Cron)
 }
 
 type TaskFactory struct {
@@ -33,12 +39,12 @@ func (tf *TaskFactory) GetTask(taskName string) (func() Task, error) {
 	if f, ok := tf.tasks.Load(taskName); ok {
 		return f.(func() Task), nil
 	}
-	return nil, errors.New("taskFunc not found")
+	return nil, errors.New("执行器不存在")
 }
 
 func (tf *TaskFactory) AddTask(taskName string, f func() Task) error {
 	if _, ok := tf.tasks.Load(taskName); ok {
-		return errors.New("task already exists")
+		return errors.New("执行器已经存在")
 	}
 	tf.tasks.Store(taskName, f)
 	logrus.Infof("register task %s", taskName)

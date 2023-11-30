@@ -1,8 +1,6 @@
 package syncer
 
 import (
-	"github.com/MR5356/elune-backend/pkg/domain/cron"
-	"github.com/MR5356/elune-backend/pkg/domain/syncer/task"
 	"github.com/MR5356/elune-backend/pkg/persistence"
 	"github.com/MR5356/elune-backend/pkg/persistence/cache"
 	"github.com/MR5356/elune-backend/pkg/persistence/database"
@@ -38,19 +36,19 @@ func (s *Service) Initialize() error {
 		Title: "git",
 	})
 
-	err = cron.GetTaskFactory().AddTask("image-sync", func() cron.Task {
-		return task.NewImageSyncTask(s.database, s.cache)
-	})
-	if err != nil {
-		return err
-	}
-
-	err = cron.GetTaskFactory().AddTask("git-sync", func() cron.Task {
-		return task.NewGitSyncTask()
-	})
-	if err != nil {
-		return err
-	}
+	//err = cron.GetTaskFactory().AddTask("image-sync", func() cron.Task {
+	//	return task.NewImageSyncTask(s.database, s.cache)
+	//})
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//err = cron.GetTaskFactory().AddTask("git-sync", func() cron.Task {
+	//	return task.NewGitSyncTask()
+	//})
+	//if err != nil {
+	//	return err
+	//}
 
 	return nil
 }

@@ -42,7 +42,7 @@ func (s *Service) SetEnableCron(id uint, enable bool) error {
 	}
 	c.Enabled = enable
 	if enable {
-		err = s.addCron(c.ID, c.CronString, c.TaskName, c.Params)
+		err = s.addCron(c, c.CronString, c.TaskName, c.Params)
 		if err != nil {
 			return err
 		}
@@ -71,7 +71,12 @@ func (s *Service) AddCron(cron *Cron) error {
 		return err
 	}
 	logrus.Infof("添加定时任务:%d %s %s %s", cron.ID, cron.CronString, cron.TaskName, cron.Params)
-	return s.addCron(cron.ID, cron.CronString, cron.TaskName, cron.Params)
+	err = s.addCron(cron, cron.CronString, cron.TaskName, cron.Params)
+	if err != nil {
+		_ = s.DeleteCron(cron.ID)
+		return errors.New("定时策略表达式不正确")
+	}
+	return nil
 }
 
 func (s *Service) DeleteCron(id uint) error {
@@ -90,18 +95,19 @@ func (s *Service) removeCron(cronId uint) {
 	s.jobMap.Delete(cronId)
 }
 
-func (s *Service) addCron(cronId uint, cronString, taskName, params string) error {
+func (s *Service) addCron(cron *Cron, cronString, taskName, params string) error {
 	taskFunc, err := s.taskFactory.GetTask(taskName)
 	if err != nil {
 		return err
 	}
 	f := taskFunc()
 	f.SetParams(params)
+	f.SetCronInfo(cron)
 	jobId, err := s.cron.AddJob(cronString, f)
 	if err != nil {
 		return err
 	}
-	s.jobMap.Store(cronId, jobId)
+	s.jobMap.Store(cron.ID, jobId)
 	return nil
 
 }
@@ -121,7 +127,7 @@ func (s *Service) Initialize() error {
 
 	for _, job := range jobs {
 		logrus.Debugf("add cron job %+v", job)
-		err := s.addCron(job.ID, job.CronString, job.TaskName, job.Params)
+		err := s.addCron(job, job.CronString, job.TaskName, job.Params)
 		if err != nil {
 			logrus.Errorf("add cron job error: %v", err)
 		}

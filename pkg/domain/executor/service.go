@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/MR5356/elune-backend/pkg/domain/cron"
 	"github.com/MR5356/elune-backend/pkg/domain/machine"
 	"github.com/MR5356/elune-backend/pkg/domain/script"
 	"github.com/MR5356/elune-backend/pkg/persistence"
@@ -23,6 +24,9 @@ type Service struct {
 	machineGroupPersistence *persistence.Persistence[*machine.Group]
 	recordPersistence       *persistence.Persistence[*Record]
 
+	database *database.Database
+	cache    cache.Cache
+
 	jobMap map[string]*JobInfo
 }
 
@@ -39,6 +43,9 @@ func NewService(database *database.Database, cache cache.Cache) *Service {
 		machinePersistence:      persistence.New(database, cache, &machine.Machine{}),
 		machineGroupPersistence: persistence.New(database, cache, &machine.Group{}),
 		recordPersistence:       persistence.New(database, cache, &Record{}),
+
+		database: database,
+		cache:    cache,
 
 		jobMap: make(map[string]*JobInfo),
 	}
@@ -193,6 +200,13 @@ func (s *Service) GetJobLog(id string) (map[string][]string, error) {
 
 func (s *Service) Initialize() error {
 	err := s.recordPersistence.DB.AutoMigrate(&Record{})
+	if err != nil {
+		return err
+	}
+
+	err = cron.GetTaskFactory().AddTask("script", func() cron.Task {
+		return NewScriptTask(s, s.database, s.cache)
+	})
 	if err != nil {
 		return err
 	}

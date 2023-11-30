@@ -13,6 +13,10 @@ func (t *TestTask) SetParams(params string) {
 
 }
 
+func (t *TestTask) SetCronInfo(cron *Cron) {
+
+}
+
 func init() {
 	err := GetTaskFactory().AddTask("test", func() Task {
 		return &TestTask{}
