@@ -13,7 +13,7 @@ type Service struct {
 	scriptTypePersistence *persistence.Persistence[*Type]
 }
 
-func NewService(database *database.Database, cache *cache.Cache) *Service {
+func NewService(database *database.Database, cache cache.Cache) *Service {
 	return &Service{
 		scriptPersistence:     persistence.New(database, cache, &Script{}),
 		scriptTypePersistence: persistence.New(database, cache, &Type{}),

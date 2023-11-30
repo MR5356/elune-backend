@@ -9,10 +9,10 @@ import (
 
 type Persistence[T any] struct {
 	DB    *database.Database
-	Cache *cache.Cache
+	Cache cache.Cache
 }
 
-func New[T any](database *database.Database, cache *cache.Cache, model T) *Persistence[T] {
+func New[T any](database *database.Database, cache cache.Cache, model T) *Persistence[T] {
 	return &Persistence[T]{
 		DB:    database,
 		Cache: cache,

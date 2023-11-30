@@ -15,7 +15,7 @@ type Service struct {
 	persistence *persistence.Persistence[*Navigation]
 }
 
-func NewService(database *database.Database, cache *cache.Cache) *Service {
+func NewService(database *database.Database, cache cache.Cache) *Service {
 	return &Service{
 		persistence.New(database, cache, &Navigation{}),
 	}

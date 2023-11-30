@@ -21,7 +21,7 @@ type Service struct {
 	groupPersistence   *persistence.Persistence[*Group]
 }
 
-func NewService(database *database.Database, cache *cache.Cache) *Service {
+func NewService(database *database.Database, cache cache.Cache) *Service {
 	return &Service{
 		machinePersistence: persistence.New(database, cache, &Machine{}),
 		groupPersistence:   persistence.New(database, cache, &Group{}),
@@ -148,7 +148,7 @@ func (s *Service) checkMachine(machine *Machine) error {
 	}
 	// TODO 增加系统信息检测
 	machine.MetaInfo = *metaInfo
-	return err
+	return nil
 }
 
 func (s *Service) Initialize() error {

@@ -17,5 +17,5 @@ type Record struct {
 }
 
 func (r *Record) TableName() string {
-	return "elune_records"
+	return "elune_executor_records"
 }

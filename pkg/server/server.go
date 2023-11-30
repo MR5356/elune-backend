@@ -9,11 +9,13 @@ import (
 	"github.com/MR5356/elune-backend/pkg/controller"
 	"github.com/MR5356/elune-backend/pkg/domain/authentication"
 	"github.com/MR5356/elune-backend/pkg/domain/blog"
+	"github.com/MR5356/elune-backend/pkg/domain/cron"
 	"github.com/MR5356/elune-backend/pkg/domain/executor"
 	"github.com/MR5356/elune-backend/pkg/domain/machine"
 	"github.com/MR5356/elune-backend/pkg/domain/navigation"
 	"github.com/MR5356/elune-backend/pkg/domain/script"
 	"github.com/MR5356/elune-backend/pkg/domain/site"
+	"github.com/MR5356/elune-backend/pkg/domain/syncer"
 	"github.com/MR5356/elune-backend/pkg/middleware"
 	"github.com/MR5356/elune-backend/pkg/persistence/cache"
 	"github.com/MR5356/elune-backend/pkg/persistence/database"
@@ -94,6 +96,8 @@ func New(config *config.Config) (server *Server, err error) {
 	scriptService := script.NewService(db, cc)
 	machineService := machine.NewService(db, cc)
 	execService := executor.NewService(db, cc)
+	syncerService := syncer.NewService(db, cc)
+	cronService := cron.NewService(db, cc)
 	//
 	//selfKubeconfig, _ := siteService.GetKey("kubeconfig")
 	//kubernetesService := kubernetes.NewService(selfKubeconfig)
@@ -108,6 +112,8 @@ func New(config *config.Config) (server *Server, err error) {
 		scriptService,
 		machineService,
 		execService,
+		syncerService,
+		cronService,
 	}
 	for _, srv := range services {
 		err := srv.Initialize()
@@ -127,6 +133,7 @@ func New(config *config.Config) (server *Server, err error) {
 		script.NewController(scriptService),
 		machine.NewController(machineService),
 		executor.NewController(execService),
+		syncer.NewController(syncerService),
 	}
 	for _, ctrl := range controllers {
 		ctrl.RegisterRoute(api)
