@@ -9,7 +9,6 @@ import (
 	"github.com/MR5356/elune-backend/pkg/persistence/cache"
 	"github.com/MR5356/elune-backend/pkg/persistence/database"
 	"github.com/sirupsen/logrus"
-	"time"
 )
 
 type Task struct {
@@ -69,7 +68,7 @@ func (t *Task) Run() {
 		TaskName: t.cronInfo.TaskName,
 		Params:   t.params,
 		Status:   cron.TaskRunning,
-		Log:      "",
+		Log:      id,
 	}
 
 	if err != nil {
@@ -82,29 +81,29 @@ func (t *Task) Run() {
 		logrus.Errorf("insert record error: %v", err)
 		return
 	}
-	go func() {
-		detail, err := t.service.recordPersistence.Detail(&Record{ID: id})
-		if err != nil {
-			logrus.Errorf("get job log error: %v", err)
-			return
-		}
-
-		record.Log = detail.Result
-		err = t.cronRecordPersistence.DB.Updates(record).Error
-		if err != nil {
-			logrus.Warnf("update record error: %v", err)
-		}
-
-		if detail.Status != taskStatusRunnig {
-			record.Status = cron.TaskFinished
-			err = t.cronRecordPersistence.DB.Updates(record).Error
-			if err != nil {
-				logrus.Warnf("update record error: %v", err)
-			}
-			return
-		}
-		time.Sleep(time.Second)
-	}()
+	//go func() {
+	//	detail, err := t.service.recordPersistence.Detail(&Record{ID: id})
+	//	if err != nil {
+	//		logrus.Errorf("get job log error: %v", err)
+	//		return
+	//	}
+	//
+	//	record.Log = detail.Result
+	//	err = t.cronRecordPersistence.DB.Updates(record).Error
+	//	if err != nil {
+	//		logrus.Warnf("update record error: %v", err)
+	//	}
+	//
+	//	if detail.Status != taskStatusRunning {
+	//		record.Status = cron.TaskFinished
+	//		err = t.cronRecordPersistence.DB.Updates(record).Error
+	//		if err != nil {
+	//			logrus.Warnf("update record error: %v", err)
+	//		}
+	//		return
+	//	}
+	//	time.Sleep(time.Second)
+	//}()
 }
 
 func (t *Task) SetParams(params string) {

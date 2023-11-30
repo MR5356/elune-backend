@@ -18,9 +18,11 @@ import (
 )
 
 const (
-	taskStatusRunnig   = "running"
+	taskStatusRunning  = "running"
 	taskStatusFinished = "finished"
 	taskStatusFailed   = "failed"
+
+	topicStopTask = "executor.task.stop"
 )
 
 type Service struct {
@@ -129,7 +131,7 @@ func (s *Service) StartNewJob(scriptId uint, machineId []uint, params string) (i
 		Script:      scriptInfo.Content,
 		Params:      params,
 		Host:        string(hostsStr),
-		Status:      taskStatusRunnig,
+		Status:      taskStatusRunning,
 	}
 
 	logrus.Debugf("record: %+v", record)
@@ -184,13 +186,18 @@ func (s *Service) StartNewJob(scriptId uint, machineId []uint, params string) (i
 	return id, nil
 }
 
-func (s *Service) StopJob(id string) error {
+func (s *Service) stopJob(id string) {
+	logrus.Debugf("stop job: %s", id)
 	jobInfo, ok := s.jobMap[id]
 	if !ok {
-		return nil
+		return
 	}
 	jobInfo.ctxCancel()
 	delete(s.jobMap, id)
+}
+
+func (s *Service) StopJob(id string) error {
+	s.cache.Publish(topicStopTask, id)
 	return nil
 }
 
@@ -216,5 +223,7 @@ func (s *Service) Initialize() error {
 	if err != nil {
 		return err
 	}
+
+	err = s.cache.Subscribe(topicStopTask, s.stopJob)
 	return nil
 }
