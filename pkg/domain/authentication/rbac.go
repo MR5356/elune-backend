@@ -129,6 +129,10 @@ func (s *RBACService) Initialize() error {
 	for _, policy := range policies {
 		_, _ = s.enforcer.AddPolicy(policy)
 	}
+	err = s.enforcer.LoadPolicy()
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
