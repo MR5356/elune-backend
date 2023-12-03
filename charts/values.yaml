@@ -34,7 +34,7 @@ environment:
   - name: "ELUNE_CACHE_DRIVER"
     value: "redis"
   - name: "ELUNE_CACHE_DSN"
-    value: "redis-headless:6379"
+    value: "redis://redis-master:6379?protocol=3"
 
 podAnnotations: {}
 

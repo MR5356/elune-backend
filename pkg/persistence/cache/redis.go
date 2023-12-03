@@ -19,16 +19,12 @@ type RedisCache struct {
 }
 
 func NewRedisCache(dsn string) (*RedisCache, error) {
-	//opts, err := redis.ParseURL(dsn)
-	//if err != nil {
-	//	return nil, err
-	//}
+	opts, err := redis.ParseURL(dsn)
+	if err != nil {
+		return nil, err
+	}
 
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     dsn,
-		Password: "",
-		DB:       0,
-	})
+	rdb := redis.NewClient(opts)
 	return &RedisCache{
 		client: rdb,
 		ctx:    context.Background(),
