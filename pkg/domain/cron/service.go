@@ -1,6 +1,7 @@
 package cron
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/MR5356/elune-backend/pkg/persistence"
 	"github.com/MR5356/elune-backend/pkg/persistence/cache"
@@ -8,7 +9,6 @@ import (
 	"github.com/MR5356/elune-backend/pkg/utils/structutil"
 	"github.com/robfig/cron/v3"
 	"github.com/sirupsen/logrus"
-	"strconv"
 	"strings"
 	"sync"
 )
@@ -96,15 +96,8 @@ func (s *Service) removeCron(cronId uint) {
 	s.cache.Publish(topicRemoveCron, cronId)
 }
 
-func (s *Service) rmCronSubscriber(cronIdStr string) {
-	logrus.Infof("rm cron task: %d", cronIdStr)
-	parseUint, err := strconv.ParseUint(cronIdStr, 10, 64)
-	if err != nil {
-		logrus.Errorf("rm cron task error: %s", err.Error())
-		return
-	}
-
-	cronId := uint(parseUint)
+func (s *Service) rmCronSubscriber(cronId uint) {
+	logrus.Infof("rm cron task: %d", cronId)
 	jobId, ok := s.jobMap.Load(cronId)
 	if !ok {
 		return
@@ -115,19 +108,47 @@ func (s *Service) rmCronSubscriber(cronIdStr string) {
 	s.jobMap.Delete(cronId)
 }
 
-func (s *Service) addCron(cron *Cron, cronString, taskName, params string) error {
-	taskFunc, err := s.taskFactory.GetTask(taskName)
+type addCronParams struct {
+	Cron       *Cron
+	CronString string
+	TaskName   string
+	Params     string
+}
+
+func (s *Service) addCronSubscriber(params string) error {
+	logrus.Infof("add cron task: %s", params)
+	ps := new(addCronParams)
+	err := json.Unmarshal([]byte(params), ps)
+	if err != nil {
+		return err
+	}
+
+	taskFunc, err := s.taskFactory.GetTask(ps.TaskName)
 	if err != nil {
 		return err
 	}
 	f := taskFunc()
-	f.SetParams(params)
-	f.SetCronInfo(cron)
-	jobId, err := s.cron.AddJob(cronString, f)
+	f.SetParams(ps.Params)
+	f.SetCronInfo(ps.Cron)
+	jobId, err := s.cron.AddJob(ps.CronString, f)
 	if err != nil {
 		return err
 	}
-	s.jobMap.Store(cron.ID, jobId)
+	s.jobMap.Store(ps.Cron.ID, jobId)
+	return nil
+}
+
+func (s *Service) addCron(cron *Cron, cronString, taskName, params string) error {
+	ps, err := json.Marshal(&addCronParams{
+		Cron:       cron,
+		CronString: cronString,
+		TaskName:   taskName,
+		Params:     params,
+	})
+	if err != nil {
+		return err
+	}
+	s.cache.Publish(topicAddCron, ps)
 	return nil
 }
 
@@ -157,5 +178,13 @@ func (s *Service) Initialize() error {
 	}
 
 	err = s.cache.Subscribe(topicRemoveCron, s.rmCronSubscriber)
+	if err != nil {
+		return err
+	}
+
+	err = s.cache.Subscribe(topicAddCron, s.addCronSubscriber)
+	if err != nil {
+		return err
+	}
 	return nil
 }

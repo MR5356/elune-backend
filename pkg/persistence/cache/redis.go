@@ -6,6 +6,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
 	"reflect"
+	"strconv"
 	"time"
 )
 
@@ -61,7 +62,23 @@ func (c *RedisCache) Subscribe(topic string, fn interface{}) error {
 
 			// 反射执行函数
 			function := reflect.ValueOf(fn)
-			params := []reflect.Value{reflect.ValueOf(msg.Payload)}
+			args := function.Type()
+			var params []reflect.Value
+			for i := 0; i < args.NumIn(); i++ {
+				param := reflect.New(args.In(i))
+				switch args.In(i).Kind() {
+				case reflect.String:
+					param.Elem().Set(reflect.ValueOf(msg.Payload))
+				case reflect.Uint:
+					parseUint, err := strconv.ParseUint(msg.Payload, 10, 64)
+					if err != nil {
+						logrus.Errorf("parse uint error when subscribe %s: %v", topic, err)
+					}
+					param.Elem().Set(reflect.ValueOf(uint(parseUint)))
+				}
+				params = append(params, param.Elem())
+			}
+
 			function.Call(params)
 		}
 	}()
