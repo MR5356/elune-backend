@@ -1,25 +1,27 @@
 package authentication
 
 import (
+	"github.com/MR5356/elune-backend/pkg/config"
 	"github.com/MR5356/elune-backend/pkg/response"
 	"github.com/MR5356/elune-backend/pkg/utils/ginutil"
 	"github.com/MR5356/elune-backend/pkg/utils/structutil"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"time"
 )
 
 type Controller struct {
 	rbacService *RBACService
 	jwtService  *JWTService
 	userService *Service
+	cfg         *config.Config
 }
 
-func NewController(rbacService *RBACService, jwtService *JWTService, userService *Service) *Controller {
+func NewController(rbacService *RBACService, jwtService *JWTService, userService *Service, cfg *config.Config) *Controller {
 	return &Controller{
 		rbacService: rbacService,
 		jwtService:  jwtService,
 		userService: userService,
+		cfg:         cfg,
 	}
 }
 
@@ -70,7 +72,7 @@ func (c *Controller) handleUpdateUserPassword(ctx *gin.Context) {
 				response.Error(ctx, response.CodeUnknownError, err.Error())
 				return
 			} else {
-				ctx.SetCookie("token", token, int(c.jwtService.expire*time.Second), "", "", false, false)
+				ctx.SetCookie("token", token, int(c.cfg.Server.Expire.Seconds()), "", "", false, false)
 				response.Success(ctx, map[string]string{"token": token})
 			}
 		}
@@ -110,7 +112,7 @@ func (c *Controller) handleLogin(ctx *gin.Context) {
 	if err != nil {
 		response.Error(ctx, response.CodeParamError, err.Error())
 	} else {
-		ctx.SetCookie("token", token, int(c.jwtService.expire*time.Second), "", "", false, false)
+		ctx.SetCookie("token", token, int(c.cfg.Server.Expire.Seconds()), "", "", false, false)
 		response.Success(ctx, map[string]string{"token": token})
 	}
 }

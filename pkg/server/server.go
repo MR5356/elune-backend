@@ -128,7 +128,7 @@ func New(config *config.Config) (server *Server, err error) {
 		site.NewController(siteService),
 		navigation.NewController(navigationService),
 		//kubernetes.NewController(kubernetesService),
-		authentication.NewController(rbacService, jwtService, userService),
+		authentication.NewController(rbacService, jwtService, userService, config),
 		blog.NewController(),
 		script.NewController(scriptService),
 		machine.NewController(machineService),
