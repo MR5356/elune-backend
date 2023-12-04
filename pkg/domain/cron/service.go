@@ -8,12 +8,14 @@ import (
 	"github.com/MR5356/elune-backend/pkg/utils/structutil"
 	"github.com/robfig/cron/v3"
 	"github.com/sirupsen/logrus"
+	"strconv"
 	"strings"
 	"sync"
 )
 
 const (
 	topicRemoveCron = "cron.remove"
+	topicAddCron    = "cron.add"
 )
 
 type Service struct {
@@ -94,15 +96,15 @@ func (s *Service) removeCron(cronId uint) {
 	s.cache.Publish(topicRemoveCron, cronId)
 }
 
-func (s *Service) rmCronSubscriber(cronId uint) {
-	logrus.Infof("rm cron task: %d", cronId)
-	//parseUint, err := strconv.ParseUint(cronIdStr, 10, 64)
-	//if err != nil {
-	//	logrus.Errorf("rm cron task error: %s", err.Error())
-	//	return
-	//}
-	//
-	//cronId := uint(parseUint)
+func (s *Service) rmCronSubscriber(cronIdStr string) {
+	logrus.Infof("rm cron task: %d", cronIdStr)
+	parseUint, err := strconv.ParseUint(cronIdStr, 10, 64)
+	if err != nil {
+		logrus.Errorf("rm cron task error: %s", err.Error())
+		return
+	}
+
+	cronId := uint(parseUint)
 	jobId, ok := s.jobMap.Load(cronId)
 	if !ok {
 		return
