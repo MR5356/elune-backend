@@ -12,12 +12,17 @@ import (
 	"sync"
 )
 
+const (
+	topicRemoveCron = "cron.remove"
+)
+
 type Service struct {
 	cronPersistence   *persistence.Persistence[*Cron]
 	recordPersistence *persistence.Persistence[*Record]
 	cron              *cron.Cron
 	jobMap            sync.Map
 	taskFactory       *TaskFactory
+	cache             cache.Cache
 }
 
 func NewService(database *database.Database, cache cache.Cache) *Service {
@@ -28,6 +33,7 @@ func NewService(database *database.Database, cache cache.Cache) *Service {
 		recordPersistence: persistence.New(database, cache, &Record{}),
 		cron:              c,
 		taskFactory:       GetTaskFactory(),
+		cache:             cache,
 	}
 }
 
@@ -85,6 +91,18 @@ func (s *Service) DeleteCron(id uint) error {
 }
 
 func (s *Service) removeCron(cronId uint) {
+	s.cache.Publish(topicRemoveCron, cronId)
+}
+
+func (s *Service) rmCronSubscriber(cronId uint) {
+	logrus.Infof("rm cron task: %d", cronId)
+	//parseUint, err := strconv.ParseUint(cronIdStr, 10, 64)
+	//if err != nil {
+	//	logrus.Errorf("rm cron task error: %s", err.Error())
+	//	return
+	//}
+	//
+	//cronId := uint(parseUint)
 	jobId, ok := s.jobMap.Load(cronId)
 	if !ok {
 		return
@@ -136,5 +154,6 @@ func (s *Service) Initialize() error {
 		}
 	}
 
+	err = s.cache.Subscribe(topicRemoveCron, s.rmCronSubscriber)
 	return nil
 }
