@@ -6,6 +6,7 @@ import (
 	"github.com/MR5356/elune-backend/pkg/utils/structutil"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"time"
 )
 
 type Controller struct {
@@ -69,7 +70,7 @@ func (c *Controller) handleUpdateUserPassword(ctx *gin.Context) {
 				response.Error(ctx, response.CodeUnknownError, err.Error())
 				return
 			} else {
-				ctx.SetCookie("token", token, 0, "", "", false, false)
+				ctx.SetCookie("token", token, int(c.jwtService.expire*time.Second), "", "", false, false)
 				response.Success(ctx, map[string]string{"token": token})
 			}
 		}
@@ -109,7 +110,7 @@ func (c *Controller) handleLogin(ctx *gin.Context) {
 	if err != nil {
 		response.Error(ctx, response.CodeParamError, err.Error())
 	} else {
-		ctx.SetCookie("token", token, 0, "", "", false, false)
+		ctx.SetCookie("token", token, int(c.jwtService.expire*time.Second), "", "", false, false)
 		response.Success(ctx, map[string]string{"token": token})
 	}
 }
