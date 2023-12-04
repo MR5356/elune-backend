@@ -71,6 +71,7 @@ func (s *Service) Initialize() error {
 		{Key: "beianMiit", Value: ""},
 		{Key: "kubeconfig", Value: ""},
 		{Key: "menus", Value: "[]"},
+		{Key: "indexPage", Value: "/public/nav"},
 	}
 
 	for _, siteConfig := range defaultSiteConfigs {

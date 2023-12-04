@@ -30,7 +30,7 @@ environment:
   - name: "ELUNE_DATABASE_DRIVER"
     value: "postgres"
   - name: "ELUNE_DEBUG"
-    value: "true"
+    value: "false"
   - name: "ELUNE_CACHE_DRIVER"
     value: "redis"
   - name: "ELUNE_CACHE_DSN"
