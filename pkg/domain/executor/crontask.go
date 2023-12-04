@@ -45,6 +45,7 @@ func (t *Task) Run() {
 
 	uniqueKey := fmt.Sprintf("script-%x", md5.Sum([]byte(t.params)))
 	err = t.cache.TryLock(uniqueKey)
+	logrus.Infof("try lock key %s error: %v", uniqueKey, err)
 	if err != nil {
 		return
 	}
