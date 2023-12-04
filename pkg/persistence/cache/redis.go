@@ -32,9 +32,9 @@ func NewRedisCache(dsn string) (*RedisCache, error) {
 }
 
 func (c *RedisCache) TryLock(key string) error {
-	logrus.Infof("try lock key: %s", key)
-	if ok, err := c.client.SetNX(c.ctx, key, true, lockExpireTime).Result(); !ok {
-		logrus.Infof("key %s is locked, err: %+v", key, err)
+	logrus.Debugf("try lock key: %s", key)
+	if ok, _ := c.client.SetNX(c.ctx, key, true, lockExpireTime).Result(); !ok {
+		logrus.Infof("key %s is locked", key)
 		return errors.New("already locked")
 	}
 	return nil
