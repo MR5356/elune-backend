@@ -3,7 +3,6 @@ package client
 import (
 	"context"
 	"github.com/dustin/go-humanize"
-	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"time"
 )
@@ -22,15 +21,15 @@ type NodeInfo struct {
 	Architecture     string `json:"architecture"`
 }
 
-func (c *Client) GetNodes() (nodes []NodeInfo, err error) {
-	nodes = make([]NodeInfo, 0)
+func (c *Client) GetNodes() (nodes []*NodeInfo, err error) {
+	nodes = make([]*NodeInfo, 0)
 	list, err := c.client.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 
 	for _, node := range list.Items {
-		nd := NodeInfo{
+		nd := &NodeInfo{
 			Name:             node.Name,
 			Status:           string(node.Status.Conditions[len(node.Status.Conditions)-1].Type),
 			Age:              humanize.CustomRelTime(node.CreationTimestamp.Time, time.Now(), "", "", magnitudes),
@@ -62,8 +61,6 @@ func (c *Client) GetNodes() (nodes []NodeInfo, err error) {
 		nd.ExternalIP = externalIP
 
 		nodes = append(nodes, nd)
-		logrus.Infof("nodes: %+v", nodes)
-
 	}
 	return
 }

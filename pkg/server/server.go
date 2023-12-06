@@ -11,6 +11,7 @@ import (
 	"github.com/MR5356/elune-backend/pkg/domain/blog"
 	"github.com/MR5356/elune-backend/pkg/domain/cron"
 	"github.com/MR5356/elune-backend/pkg/domain/executor"
+	"github.com/MR5356/elune-backend/pkg/domain/kubernetes"
 	"github.com/MR5356/elune-backend/pkg/domain/machine"
 	"github.com/MR5356/elune-backend/pkg/domain/navigation"
 	"github.com/MR5356/elune-backend/pkg/domain/script"
@@ -100,7 +101,7 @@ func New(config *config.Config) (server *Server, err error) {
 	cronService := cron.NewService(db, cc)
 	//
 	//selfKubeconfig, _ := siteService.GetKey("kubeconfig")
-	//kubernetesService := kubernetes.NewService(selfKubeconfig)
+	kubernetesService := kubernetes.NewService(db, cc)
 
 	services := []service.Service{
 		siteService,
@@ -114,6 +115,7 @@ func New(config *config.Config) (server *Server, err error) {
 		execService,
 		syncerService,
 		cronService,
+		kubernetesService,
 	}
 	for _, srv := range services {
 		err := srv.Initialize()
@@ -135,6 +137,7 @@ func New(config *config.Config) (server *Server, err error) {
 		executor.NewController(execService),
 		syncer.NewController(syncerService),
 		cron.NewController(cronService),
+		kubernetes.NewController(kubernetesService),
 	}
 	for _, ctrl := range controllers {
 		ctrl.RegisterRoute(api)
