@@ -40,7 +40,17 @@ func NewService(database *database.Database, cache cache.Cache) *Service {
 }
 
 func (s *Service) ListCron() ([]*Cron, error) {
-	return s.cronPersistence.List(&Cron{})
+	res, err := s.cronPersistence.List(&Cron{})
+	if err != nil {
+		return nil, err
+	}
+	for _, r := range res {
+		jobId, ok := s.jobMap.Load(r.ID)
+		if ok {
+			r.NextTime = s.cron.Entry(jobId.(cron.EntryID)).Next
+		}
+	}
+	return res, nil
 }
 
 func (s *Service) SetEnableCron(id uint, enable bool) error {

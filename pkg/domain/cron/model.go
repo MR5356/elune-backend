@@ -1,15 +1,19 @@
 package cron
 
-import "github.com/MR5356/elune-backend/pkg/persistence"
+import (
+	"github.com/MR5356/elune-backend/pkg/persistence"
+	"time"
+)
 
 type Cron struct {
-	ID         uint   `json:"id" gorm:"autoIncrement;primaryKey"`
-	Title      string `json:"title" gorm:"not null"`
-	Desc       string `json:"desc"`
-	CronString string `json:"cronString"`
-	TaskName   string `json:"taskName"`
-	Params     string `json:"params"`
-	Enabled    bool   `json:"enabled"`
+	ID         uint      `json:"id" gorm:"autoIncrement;primaryKey"`
+	Title      string    `json:"title" gorm:"not null"`
+	Desc       string    `json:"desc"`
+	CronString string    `json:"cronString"`
+	TaskName   string    `json:"taskName"`
+	NextTime   time.Time `json:"nextTime" gorm:"-"`
+	Params     string    `json:"params"`
+	Enabled    bool      `json:"enabled"`
 
 	persistence.BaseModel
 }
