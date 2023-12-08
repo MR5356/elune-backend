@@ -100,13 +100,11 @@ func New(config *config.Config) (server *Server, err error) {
 	syncerService := syncer.NewService(db, cc)
 	cronService := cron.NewService(db, cc)
 	//
-	//selfKubeconfig, _ := siteService.GetKey("kubeconfig")
 	kubernetesService := kubernetes.NewService(db, cc)
 
 	services := []service.Service{
 		siteService,
 		navigationService,
-		//kubernetesService,
 		rbacService,
 		jwtService,
 		userService,
@@ -129,7 +127,6 @@ func New(config *config.Config) (server *Server, err error) {
 	controllers := []controller.Controller{
 		site.NewController(siteService),
 		navigation.NewController(navigationService),
-		//kubernetes.NewController(kubernetesService),
 		authentication.NewController(rbacService, jwtService, userService, config),
 		blog.NewController(),
 		script.NewController(scriptService),
