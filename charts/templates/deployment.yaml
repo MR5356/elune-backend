@@ -35,6 +35,12 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+          {{- range $vos := .Values.volumeMounts }}
+            - name: {{ $vos.name | quote }}
+              mountPath: {{ $vos.mountPath | quote }}
+              readOnly: {{ $vos.readOnly }}
+          {{- end }}
           env:
             {{- range .Values.environment }}
             - name: {{ .name | quote }}
@@ -54,6 +60,15 @@ spec:
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+      {{- range $vos := .Values.volumes }}
+        - name: {{ $vos.name | quote }}
+        {{- if $vos.hostPath }}
+          hostPath:
+            path: {{ $vos.hostPath }}
+            type: {{ $vos.type }}
+        {{- end }}
+      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

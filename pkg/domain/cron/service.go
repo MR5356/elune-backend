@@ -11,7 +11,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"strings"
 	"sync"
-	"time"
 )
 
 const (
@@ -29,11 +28,7 @@ type Service struct {
 }
 
 func NewService(database *database.Database, cache cache.Cache) *Service {
-	loc, err := time.LoadLocation("Asia/Shanghai")
-	if err != nil {
-		logrus.Fatalf("load location err: %+v", err)
-	}
-	c := cron.New(cron.WithSeconds(), cron.WithLocation(loc))
+	c := cron.New(cron.WithSeconds())
 	c.Start()
 	return &Service{
 		cronPersistence:   persistence.New(database, cache, &Cron{}),

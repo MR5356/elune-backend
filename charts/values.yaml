@@ -88,11 +88,22 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
+volumeMounts:
+  - name: timezone
+    mountPath: /etc/localtime
+    readOnly: true
+
+volumes:
+  - name: timezone
+    readOnly: true
+    hostPath: /etc/localtime
+    type: "File"
+
 strategy:
   type: RollingUpdate
   rollingUpdate:
     maxSurge: 100%
-    maxUnavailable: 0%
+    maxUnavailable: 50%
 
 nodeSelector: {}
 
