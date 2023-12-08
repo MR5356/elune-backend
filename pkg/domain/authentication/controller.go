@@ -63,7 +63,7 @@ func (c *Controller) handleUpdateUserPassword(ctx *gin.Context) {
 		}
 
 		user.Password = password
-		err = c.userService.persistence.Update(&User{ID: user.ID}, structutil.Struct2Map(user))
+		err = c.userService.userPersistence.Update(&User{ID: user.ID}, structutil.Struct2Map(user))
 		if err != nil {
 			response.Error(ctx, response.CodeUnknownError, err.Error())
 		} else {
@@ -97,7 +97,7 @@ func (c *Controller) handleLogin(ctx *gin.Context) {
 
 	logrus.Infof("login username: %s, password: %s", username, password)
 
-	user, err := c.userService.persistence.Detail(&User{Username: username})
+	user, err := c.userService.userPersistence.Detail(&User{Username: username})
 	if err != nil {
 		response.Error(ctx, response.CodeParamError, "用户不存在")
 		return

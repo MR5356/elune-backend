@@ -12,11 +12,12 @@ import (
 type RBACService struct {
 	enforcer *casbin.Enforcer
 	db       *gorm.DB
+	service  *Service
 }
 
 const defaultRBACModel = "[request_definition]\nr = sub, obj, act\n\n[policy_definition]\np = sub, obj, act\n\n[role_definition]\ng = _, _\n\n[matchers]\nm = g(r.sub, p.sub) && keyMatch(r.obj, p.obj) && keyMatch(r.act, p.act)\n\n[policy_effect]\ne = some(where (p.eft == allow))"
 
-func NewRBACService(db *gorm.DB) (*RBACService, error) {
+func NewRBACService(db *gorm.DB, service *Service) (*RBACService, error) {
 	adapter, err := gormadapter.NewAdapterByDB(db)
 	if err != nil {
 		return nil, err
@@ -43,6 +44,7 @@ func NewRBACService(db *gorm.DB) (*RBACService, error) {
 	return &RBACService{
 		enforcer: enforcer,
 		db:       db,
+		service:  service,
 	}, nil
 }
 
@@ -77,10 +79,30 @@ func (s *RBACService) Initialize() error {
 	if err != nil {
 		return err
 	}
+	ugs, err := s.service.userGroupPersistence.List(&UserGroup{})
+	if err != nil {
+		return err
+	}
+
+	for _, ug := range ugs {
+		u, err := s.service.userPersistence.Detail(&User{ID: ug.UserID})
+		if err != nil {
+			return err
+		}
+
+		g, err := s.service.groupPersistence.Detail(&Group{ID: ug.GroupID})
+		if err != nil {
+			return err
+		}
+		_, _ = s.enforcer.AddGroupingPolicy(u.Username, g.Title)
+	}
+
+	//logrus.Fatalf("ug: %+v", ugs)
+
 	// 默认角色
-	_, _ = s.enforcer.AddRoleForUser("admin", "administrators")
-	_, _ = s.enforcer.AddRoleForUser("devops", "devops")
-	_, _ = s.enforcer.AddRoleForUser("guest", "users")
+	//_, _ = s.enforcer.AddRoleForUser("admin", "administrators")
+	//_, _ = s.enforcer.AddRoleForUser("devops", "devops")
+	//_, _ = s.enforcer.AddRoleForUser("guest", "users")
 	_, _ = s.enforcer.AddRoleForUser("unknown", "guests")
 
 	// 默认权限

@@ -87,14 +87,14 @@ func New(config *config.Config) (server *Server, err error) {
 	logrus.Debugf("cache: %+v", cc)
 
 	// rbac
-	rbacService, err := authentication.NewRBACService(db.DB)
+	userService := authentication.NewService(db, cc)
+	rbacService, err := authentication.NewRBACService(db.DB, userService)
 	if err != nil {
 		return nil, err
 	}
 
 	siteService := site.NewService(db, cc)
 	navigationService := navigation.NewService(db, cc)
-	userService := authentication.NewService(db, cc)
 	scriptService := script.NewService(db, cc)
 	machineService := machine.NewService(db, cc)
 	execService := executor.NewService(db, cc)
@@ -106,9 +106,9 @@ func New(config *config.Config) (server *Server, err error) {
 	services := []service.Service{
 		siteService,
 		navigationService,
+		userService,
 		rbacService,
 		jwtService,
-		userService,
 		scriptService,
 		machineService,
 		execService,
