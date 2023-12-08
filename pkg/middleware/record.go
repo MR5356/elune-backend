@@ -2,16 +2,27 @@ package middleware
 
 import (
 	"fmt"
+	"github.com/MR5356/elune-backend/pkg/domain/authentication"
+	"github.com/MR5356/elune-backend/pkg/utils/ginutil"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"time"
 )
 
-func Record() gin.HandlerFunc {
+func Record(jwtService *authentication.JWTService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		path := c.Request.URL.Path
 		start := time.Now()
+
+		tokenString := ginutil.GetToken(c)
+
+		user, err := jwtService.ParseToken(tokenString)
+		if err != nil || user == nil {
+			user = &authentication.User{
+				Username: "unknown",
+			}
+		}
 
 		defer func() {
 			if path == "/api/v1/health" {
@@ -29,6 +40,7 @@ func Record() gin.HandlerFunc {
 				"code":   httpCode,
 				"ip":     clientIP,
 				"path":   path,
+				"user":   user.Username,
 			})
 
 			if len(c.Errors) > 0 {

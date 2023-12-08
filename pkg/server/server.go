@@ -47,9 +47,12 @@ func New(config *config.Config) (server *Server, err error) {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
+	// jwt
+	jwtService := authentication.NewJWTService(config.Server.Secret, config.Server.Issuer, config.Server.Expire)
+
 	engine := gin.New()
 	engine.Use(
-		middleware.Record(),
+		middleware.Record(jwtService),
 		middleware.CORS(),
 		gzip.Gzip(gzip.DefaultCompression),
 		middleware.Recovery(),
@@ -88,8 +91,6 @@ func New(config *config.Config) (server *Server, err error) {
 	if err != nil {
 		return nil, err
 	}
-	// jwt
-	jwtService := authentication.NewJWTService(config.Server.Secret, config.Server.Issuer, config.Server.Expire)
 
 	siteService := site.NewService(db, cc)
 	navigationService := navigation.NewService(db, cc)
