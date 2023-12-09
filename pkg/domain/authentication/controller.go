@@ -133,6 +133,41 @@ func (c *Controller) handleUserInfo(ctx *gin.Context) {
 	}
 }
 
+func (c *Controller) handleUpdateUserNickname(ctx *gin.Context) {
+	tokenString := ginutil.GetToken(ctx)
+
+	user, err := c.jwtService.ParseToken(tokenString)
+	if err != nil {
+		ctx.SetCookie("token", "", 0, "", "", false, false)
+		response.Error(ctx, response.CodeUnknownError, "用户信息错误")
+		return
+	} else {
+		json := make(map[string]string)
+		err := ctx.BindJSON(&json)
+		if err != nil {
+			response.Error(ctx, response.CodeParamError, err.Error())
+			return
+		}
+
+		nickname := json["nickname"]
+
+		user.Nickname = nickname
+		err = c.userService.userPersistence.Update(&User{ID: user.ID}, structutil.Struct2Map(user))
+		if err != nil {
+			response.Error(ctx, response.CodeUnknownError, err.Error())
+		} else {
+			token, err := c.jwtService.CreateToken(user)
+			if err != nil {
+				response.Error(ctx, response.CodeUnknownError, err.Error())
+				return
+			} else {
+				ctx.SetCookie("token", token, int(c.cfg.Server.Expire.Seconds()), "", "", false, false)
+				response.Success(ctx, map[string]string{"token": token})
+			}
+		}
+	}
+}
+
 func (c *Controller) handleTokenNeedRefresh(ctx *gin.Context) {
 	tokenString := ginutil.GetToken(ctx)
 
@@ -165,4 +200,5 @@ func (c *Controller) RegisterRoute(group *gin.RouterGroup) {
 	api.GET("role", c.handleGetUserRole)
 	api.GET("token/refresh", c.handleTokenNeedRefresh)
 	api.PUT("token/refresh", c.handleRefreshToken)
+	api.PUT("nickname", c.handleUpdateUserNickname)
 }
