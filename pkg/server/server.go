@@ -14,6 +14,7 @@ import (
 	"github.com/MR5356/elune-backend/pkg/domain/kubernetes"
 	"github.com/MR5356/elune-backend/pkg/domain/machine"
 	"github.com/MR5356/elune-backend/pkg/domain/navigation"
+	"github.com/MR5356/elune-backend/pkg/domain/notify"
 	"github.com/MR5356/elune-backend/pkg/domain/script"
 	"github.com/MR5356/elune-backend/pkg/domain/site"
 	"github.com/MR5356/elune-backend/pkg/domain/syncer"
@@ -47,10 +48,22 @@ func New(config *config.Config) (server *Server, err error) {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
+	// 准备目录
+	for name, path := range config.Server.RuntimeDirectories {
+		logrus.Infof("准备 %s 目录: %s", name, path)
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			err = os.MkdirAll(path, os.ModePerm)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	// jwt
 	jwtService := authentication.NewJWTService(config.Server.Secret, config.Server.Issuer, config.Server.Expire)
 
 	engine := gin.New()
+	engine.MaxMultipartMemory = 8 << 20
 	engine.Use(
 		middleware.Record(jwtService),
 		middleware.CORS(),
@@ -100,8 +113,8 @@ func New(config *config.Config) (server *Server, err error) {
 	execService := executor.NewService(db, cc)
 	syncerService := syncer.NewService(db, cc)
 	cronService := cron.NewService(db, cc)
-	//
 	kubernetesService := kubernetes.NewService(db, cc)
+	notifyService := notify.NewService(db, cc, config)
 
 	services := []service.Service{
 		siteService,
@@ -115,6 +128,7 @@ func New(config *config.Config) (server *Server, err error) {
 		syncerService,
 		cronService,
 		kubernetesService,
+		notifyService,
 	}
 	for _, srv := range services {
 		err := srv.Initialize()
@@ -136,6 +150,7 @@ func New(config *config.Config) (server *Server, err error) {
 		syncer.NewController(syncerService),
 		cron.NewController(cronService),
 		kubernetes.NewController(kubernetesService),
+		notify.NewController(notifyService),
 	}
 	for _, ctrl := range controllers {
 		ctrl.RegisterRoute(api)

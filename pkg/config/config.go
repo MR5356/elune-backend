@@ -2,6 +2,8 @@ package config
 
 import (
 	"github.com/mcuadros/go-defaults"
+	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -12,6 +14,15 @@ const (
 	EluneEnvDatabaseDSN    = "ELUNE_DATABASE_DSN"
 	EluneEnvCacheDriver    = "ELUNE_CACHE_DRIVER"
 	EluneEnvCacheDSN       = "ELUNE_CACHE_DSN"
+
+	PluginDirectoryNotify = "notify"
+)
+
+var (
+	absPath, _         = filepath.Abs(filepath.Dir(os.Args[0]))
+	RuntimeDirectories = map[string]string{
+		PluginDirectoryNotify: filepath.Join(absPath, "plugins", "notify"),
+	}
 )
 
 type Config struct {
@@ -26,14 +37,16 @@ func New(cfgs ...Cfg) *Config {
 	for _, cfg := range cfgs {
 		cfg(config)
 	}
+	config.Server.RuntimeDirectories = RuntimeDirectories
 	return config
 }
 
 type Server struct {
-	Port        int    `json:"port" yaml:"port" default:"5678"`
-	Prefix      string `json:"prefix" yaml:"prefix" default:"/api/v1"`
-	Debug       bool   `json:"debug" yaml:"debug" default:"false"`
-	GracePeriod int    `json:"gracePeriod" yaml:"gracePeriod" default:"30"`
+	Port               int               `json:"port" yaml:"port" default:"5678"`
+	Prefix             string            `json:"prefix" yaml:"prefix" default:"/api/v1"`
+	Debug              bool              `json:"debug" yaml:"debug" default:"false"`
+	GracePeriod        int               `json:"gracePeriod" yaml:"gracePeriod" default:"30"`
+	RuntimeDirectories map[string]string `json:"-" yaml:"-"`
 
 	Issuer string        `json:"issuer" yaml:"issuer" default:"elune.docker.ac.cn"`
 	Secret string        `json:"secret" yaml:"secret" default:"Elune"`

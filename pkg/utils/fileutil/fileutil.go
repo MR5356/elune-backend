@@ -1,10 +1,13 @@
 package fileutil
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
+	"io"
 	"os"
 	"strings"
 )
@@ -54,4 +57,17 @@ func UnMarshalToAnyFromFile(filePath string, target any) error {
 
 func WriteToFile(filename string, data []byte) error {
 	return os.WriteFile(filename, data, 0666)
+}
+
+func GetFileMd5(path string) string {
+	pFile, err := os.Open(path)
+	if err != nil {
+		logrus.Errorf("打开文件失败，filename=%v, err=%v", path, err)
+		return ""
+	}
+	defer pFile.Close()
+	md5h := md5.New()
+	io.Copy(md5h, pFile)
+
+	return hex.EncodeToString(md5h.Sum(nil))
 }
