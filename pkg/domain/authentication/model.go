@@ -15,7 +15,7 @@ type User struct {
 }
 
 func (u *User) TableName() string {
-	return "elune_users"
+	return "elune_users_v1"
 }
 
 func (u *User) Desensitization() *User {
