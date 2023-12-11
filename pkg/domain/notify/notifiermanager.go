@@ -69,10 +69,12 @@ func (m *NotifierManager) GetSymbol(filePath string) (plugin.Symbol, error) {
 	}
 	p, err := plugin.Open(filePath)
 	if err != nil {
+		logrus.Errorf("plugin open error: %s", err)
 		return nil, err
 	}
 	symbol, err := p.Lookup("New")
 	if err != nil {
+		logrus.Errorf("plugin lookup error: %s", err)
 		return nil, err
 	}
 	m.symbols.Store(filePath, symbol)
