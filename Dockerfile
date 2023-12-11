@@ -1,4 +1,4 @@
-FROM golang:1.21.1-alpine3.18 as builder
+FROM golang:1.21.5-alpine3.18 as builder
 WORKDIR /build
 RUN apk add make git && \
     go env -w GOPROXY=https://goproxy.cn,direct

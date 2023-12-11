@@ -4,6 +4,7 @@ import (
 	"github.com/MR5356/elune-backend/pkg/response"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"strconv"
 )
 
 type Controller struct {
@@ -74,10 +75,34 @@ func (c *Controller) handleListJob(ctx *gin.Context) {
 	}
 }
 
+func (c *Controller) handlePageJob(ctx *gin.Context) {
+	pageNumStr := ctx.Query("pageNum")
+	pageSizeStr := ctx.Query("pageSize")
+	pageNum, err := strconv.Atoi(pageNumStr)
+	if err != nil {
+		pageNum = 1
+	}
+	pageSize, err := strconv.Atoi(pageSizeStr)
+	if err != nil {
+		pageSize = 10
+	}
+	if pageSize > 50 {
+		pageSize = 50
+	}
+	res, err := c.service.PageJob(pageNum, pageSize)
+	if err != nil {
+		response.Error(ctx, response.CodeParamError, err.Error())
+		return
+	} else {
+		response.Success(ctx, res)
+	}
+}
+
 func (c *Controller) RegisterRoute(group *gin.RouterGroup) {
 	api := group.Group("/execute")
 	api.POST("/new", c.handleStartNewJob)
 	api.DELETE("/stop/:id", c.handleStopJob)
 	api.GET("/log/:id", c.handleGetJobLog)
 	api.GET("/list", c.handleListJob)
+	api.GET("/list/page", c.handlePageJob)
 }

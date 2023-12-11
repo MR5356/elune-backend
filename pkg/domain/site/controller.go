@@ -2,7 +2,9 @@ package site
 
 import (
 	"github.com/MR5356/elune-backend/pkg/response"
+	"github.com/MR5356/elune-backend/pkg/utils/systemutil"
 	"github.com/gin-gonic/gin"
+	"time"
 )
 
 type Controller struct {
@@ -39,8 +41,20 @@ func (c *Controller) getKeyController(ctx *gin.Context) {
 	}
 }
 
+func (c *Controller) handleRestart(ctx *gin.Context) {
+	go func() {
+		// 给前端回复时间
+		time.Sleep(time.Second)
+		systemutil.Restart()
+	}()
+	response.Success(ctx, nil)
+}
+
 func (c *Controller) RegisterRoute(group *gin.RouterGroup) {
 	api := group.Group("/site")
 	api.PUT("/config", c.setKeyController)
 	api.GET("/config/:key", c.getKeyController)
+
+	system := group.Group("/system")
+	system.PUT("/restart", c.handleRestart)
 }

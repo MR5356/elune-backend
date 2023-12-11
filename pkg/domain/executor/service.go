@@ -82,6 +82,20 @@ func (s *Service) ListJob() ([]*Record, error) {
 	return res, err
 }
 
+func (s *Service) PageJob(pageNum, pageSize int) (*persistence.Pager[*Record], error) {
+	res := new(persistence.Pager[*Record])
+	res.CurrentPage = int64(pageNum)
+	res.PageSize = int64(pageSize)
+	s.database.DB.Model(&Record{}).Count(&res.Total)
+	if res.Total == 0 {
+		res.Data = make([]*Record, 0)
+	}
+
+	err := s.database.DB.Model(&Record{}).Select("id, script_title, script, host, params, status, message, error, created_at, updated_at").Order("updated_at desc").Where(&Record{}).Scopes(persistence.Pagination(res)).Find(&res.Data).Error
+
+	return res, err
+}
+
 func (s *Service) StartNewJob(scriptId uint, machineId []uint, params string) (id string, err error) {
 	id = uuid.NewString()
 	ctx, cancel := context.WithCancel(context.Background())

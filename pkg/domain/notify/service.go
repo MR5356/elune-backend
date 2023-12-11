@@ -18,6 +18,7 @@ import (
 
 const (
 	topicAddNotifierPlugin = "notify.plugin.add"
+	topicDelNotifierPlugin = "notify.plugin.del"
 )
 
 type Service struct {
@@ -36,6 +37,24 @@ func NewService(database *database.Database, cache cache.Cache, cfg *config.Conf
 	}
 }
 
+func (s *Service) RemoveNotifierPlugin(id uint) error {
+	plugin, err := s.notifierPluginPersistence.Detail(&NotifierPlugin{ID: id})
+	if err != nil {
+		return errors.New("插件不存在")
+	}
+	s.cache.Publish(topicDelNotifierPlugin, s.getPluginFilePath(plugin))
+
+	err = s.notifierPluginPersistence.Delete(&NotifierPlugin{ID: id})
+	if err != nil {
+		return errors.New("删除插件失败")
+	}
+	return nil
+}
+
+func (s *Service) getPluginFilePath(plugin *NotifierPlugin) string {
+	return filepath.Join(s.config.Server.RuntimeDirectories[config.PluginDirectoryNotify], plugin.Name+"-"+plugin.Version+".so")
+}
+
 func (s *Service) UploadNotifierPlugin(filePath string) error {
 	symbol, err := s.notifierManager.GetSymbol(filePath)
 	if err != nil {
@@ -51,8 +70,9 @@ func (s *Service) UploadNotifierPlugin(filePath string) error {
 	}
 
 	notifierPlugin.Version = fmt.Sprintf("%x", md5.Sum(content))[:6]
+	notifierPlugin.Installed = true
 
-	filename := filepath.Join(s.config.Server.RuntimeDirectories[config.PluginDirectoryNotify], notifierPlugin.Name+"-"+notifierPlugin.Version+".so")
+	filename := s.getPluginFilePath(notifierPlugin)
 	pi := &PluginInfo{
 		Name:     notifierPlugin.Name,
 		Filename: filename,
@@ -65,6 +85,8 @@ func (s *Service) UploadNotifierPlugin(filePath string) error {
 	}
 
 	s.cache.Publish(topicAddNotifierPlugin, piStr)
+
+	notifierPlugin.Status = "success"
 
 	return s.notifierPluginPersistence.Insert(notifierPlugin)
 }
@@ -91,17 +113,26 @@ func (s *Service) savePluginFile(info string) error {
 	return s.notifierManager.RegisterPlugin(pi.Name, pi.Filename)
 }
 
-func (s *Service) AddNotifierPlugin(p *NotifierPlugin, filePath string) error {
-	if err := s.notifierManager.RegisterPlugin(p.Name, filePath); err != nil {
-		return err
-	}
-	defer os.RemoveAll(filePath)
-	p.Version = fileutil.GetFileMd5(filePath)[:6]
-	err := os.Rename(filePath, filepath.Join(s.config.Server.RuntimeDirectories[config.PluginDirectoryNotify], p.Name+p.Version+".so"))
-	if err != nil {
-		return err
-	}
-	return s.notifierPluginPersistence.Insert(p)
+func (s *Service) delPluginFile(path string) error {
+	logrus.Debugf("del plugin file: %s", path)
+	return os.Remove(path)
+}
+
+//func (s *Service) AddNotifierPlugin(p *NotifierPlugin, filePath string) error {
+//	if err := s.notifierManager.RegisterPlugin(p.Name, filePath); err != nil {
+//		return err
+//	}
+//	defer os.RemoveAll(filePath)
+//	p.Version = fileutil.GetFileMd5(filePath)[:6]
+//	err := os.Rename(filePath, filepath.Join(s.config.Server.RuntimeDirectories[config.PluginDirectoryNotify], p.Name+p.Version+".so"))
+//	if err != nil {
+//		return err
+//	}
+//	return s.notifierPluginPersistence.Insert(p)
+//}
+
+func (s *Service) ListNotifierPlugins() ([]*NotifierPlugin, error) {
+	return s.notifierPluginPersistence.List(&NotifierPlugin{})
 }
 
 func (s *Service) Initialize() error {
@@ -116,6 +147,14 @@ func (s *Service) Initialize() error {
 	}
 
 	err = s.cache.Subscribe(topicAddNotifierPlugin, s.savePluginFile)
+	if err != nil {
+		return err
+	}
+
+	err = s.cache.Subscribe(topicDelNotifierPlugin, s.delPluginFile)
+	if err != nil {
+		return err
+	}
 
 	psMap := map[string]*NotifierPlugin{}
 	for _, p := range ps {
@@ -130,7 +169,10 @@ func (s *Service) Initialize() error {
 
 	for _, p := range psMap {
 		logrus.Infof("load plugin: %+v", p)
-		err := s.notifierManager.RegisterPlugin(p.Name, filepath.Join(s.config.Server.RuntimeDirectories[config.PluginDirectoryNotify], p.Name+p.Version+".so"))
+		if p.IsBuiltIn {
+			continue
+		}
+		err := s.notifierManager.RegisterPlugin(p.Name, s.getPluginFilePath(p))
 		if err != nil {
 			logrus.Errorf("plugin register error: %v", err)
 			p.Status = err.Error()

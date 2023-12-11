@@ -8,11 +8,15 @@ import (
 )
 
 type NotifierPlugin struct {
-	ID      uint   `json:"id" gorm:"autoIncrement;primaryKey"`
-	Name    string `json:"name" gorm:"length:32;unique;not null"`
-	Version string `json:"-" gorm:"unique;not null"`
-	Params  NotifierParams
-	Status  string `json:"status"`
+	ID        uint           `json:"id" gorm:"autoIncrement;primaryKey"`
+	Name      string         `json:"name" gorm:"length:32;unique;not null"`
+	Version   string         `json:"-" gorm:"unique;not null"`
+	Params    NotifierParams `json:"params"`
+	Status    string         `json:"status"`
+	URL       string         `json:"url"`
+	IsBuiltIn bool           `json:"isBuiltIn"`
+	Installed bool           `json:"installed"`
+	From      string         `json:"from"`
 
 	persistence.BaseModel
 }

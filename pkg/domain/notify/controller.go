@@ -5,6 +5,7 @@ import (
 	"github.com/MR5356/elune-backend/pkg/response"
 	"github.com/gin-gonic/gin"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -41,33 +42,59 @@ func (c *Controller) handleUploadNotifierPlugin(ctx *gin.Context) {
 	response.Success(ctx, nil)
 }
 
-func (c *Controller) handleAddNotifierPlugin(ctx *gin.Context) {
-	type params struct {
-		Name string `json:"name"`
-		Desc string `json:"desc"`
-		File string `json:"file"`
-	}
-	ps := new(params)
-	err := ctx.ShouldBind(ps)
+//func (c *Controller) handleAddNotifierPlugin(ctx *gin.Context) {
+//	type params struct {
+//		Name string `json:"name"`
+//		Desc string `json:"desc"`
+//		File string `json:"file"`
+//	}
+//	ps := new(params)
+//	err := ctx.ShouldBind(ps)
+//	if err != nil {
+//		response.Error(ctx, response.CodeParamError, err.Error())
+//		return
+//	}
+//
+//	notifierPlugin := &NotifierPlugin{
+//		Name: ps.Name,
+//	}
+//
+//	err = c.service.AddNotifierPlugin(notifierPlugin, ps.File)
+//	if err != nil {
+//		response.Error(ctx, response.CodeParamError, err.Error())
+//		return
+//	}
+//	response.Success(ctx, nil)
+//}
+
+func (c *Controller) handleListNotifierPlugins(ctx *gin.Context) {
+	plugins, err := c.service.ListNotifierPlugins()
 	if err != nil {
 		response.Error(ctx, response.CodeParamError, err.Error())
 		return
 	}
+	response.Success(ctx, plugins)
+}
 
-	notifierPlugin := &NotifierPlugin{
-		Name: ps.Name,
-	}
-
-	err = c.service.AddNotifierPlugin(notifierPlugin, ps.File)
+func (c *Controller) handleUninstallNotifierPlugin(ctx *gin.Context) {
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		response.Error(ctx, response.CodeParamError, err.Error())
 		return
 	}
-	response.Success(ctx, nil)
+	err = c.service.RemoveNotifierPlugin(uint(id))
+	if err != nil {
+		response.Error(ctx, response.CodeParamError, err.Error())
+	} else {
+		response.Success(ctx, nil)
+	}
 }
 
 func (c *Controller) RegisterRoute(group *gin.RouterGroup) {
 	api := group.Group("notify")
-	api.POST("/plugin/add", c.handleAddNotifierPlugin)
+	//api.POST("/plugin/add", c.handleAddNotifierPlugin)
 	api.POST("/plugin/upload", c.handleUploadNotifierPlugin)
+	api.GET("/plugin/list", c.handleListNotifierPlugins)
+	api.DELETE("/plugin/uninstall/:id", c.handleUninstallNotifierPlugin)
 }
