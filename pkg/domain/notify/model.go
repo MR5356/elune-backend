@@ -9,7 +9,7 @@ import (
 
 type NotifierPlugin struct {
 	ID        uint           `json:"id" gorm:"autoIncrement;primaryKey"`
-	Name      string         `json:"name" gorm:"length:32;unique;not null"`
+	Name      string         `json:"name" gorm:"length:32;not null"`
 	Version   string         `json:"-" gorm:"unique;not null"`
 	Params    NotifierParams `json:"params"`
 	Status    string         `json:"status"`

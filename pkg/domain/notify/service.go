@@ -11,6 +11,7 @@ import (
 	"github.com/MR5356/elune-backend/pkg/persistence/database"
 	"github.com/MR5356/elune-backend/pkg/utils/fileutil"
 	"github.com/MR5356/elune-backend/pkg/utils/structutil"
+	"github.com/MR5356/notify"
 	"github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
@@ -87,6 +88,7 @@ func (s *Service) UploadNotifierPlugin(filePath string) error {
 	s.cache.Publish(topicAddNotifierPlugin, piStr)
 
 	notifierPlugin.Status = "success"
+	notifierPlugin.From = "自定义插件"
 
 	return s.notifierPluginPersistence.Insert(notifierPlugin)
 }
@@ -139,6 +141,29 @@ func (s *Service) Initialize() error {
 	err := s.notifierPluginPersistence.DB.AutoMigrate(&NotifierPlugin{})
 	if err != nil {
 		return err
+	}
+
+	builtinPlugins := []*NotifierPlugin{
+		{
+			ID:      1,
+			Name:    "larkNotifier",
+			Version: "9ae861",
+			Params: []notify.Param{
+				{
+					Name: "url",
+					Type: "string",
+					Desc: "飞书通知机器人 webhook 地址",
+				},
+			},
+		},
+	}
+
+	for _, p := range builtinPlugins {
+		p.From = "内置插件"
+		p.IsBuiltIn = true
+		p.Installed = true
+		p.Status = "success"
+		_ = s.notifierPluginPersistence.Insert(p)
 	}
 
 	ps, err := s.notifierPluginPersistence.List(&NotifierPlugin{})
