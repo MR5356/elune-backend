@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/MR5356/elune-backend/pkg/response"
 	"github.com/gin-gonic/gin"
+	"os"
+	"time"
 )
 
 type Controller struct {
@@ -23,13 +25,20 @@ func (c *Controller) handleUploadNotifierPlugin(ctx *gin.Context) {
 		return
 	}
 
-	tmpFilePath := fmt.Sprintf("/tmp/%s", file.Filename)
+	tmpFilePath := fmt.Sprintf("/tmp/elune/%s-%s", time.Now().Format("20060102150405"), file.Filename)
 	err = ctx.SaveUploadedFile(file, tmpFilePath)
+	defer os.RemoveAll(tmpFilePath)
 	if err != nil {
 		response.Error(ctx, response.CodeParamError, err.Error())
 		return
 	}
-	response.Success(ctx, tmpFilePath)
+
+	err = c.service.UploadNotifierPlugin(tmpFilePath)
+	if err != nil {
+		response.Error(ctx, response.CodeParamError, err.Error())
+		return
+	}
+	response.Success(ctx, nil)
 }
 
 func (c *Controller) handleAddNotifierPlugin(ctx *gin.Context) {
@@ -47,7 +56,6 @@ func (c *Controller) handleAddNotifierPlugin(ctx *gin.Context) {
 
 	notifierPlugin := &NotifierPlugin{
 		Name: ps.Name,
-		Desc: ps.Desc,
 	}
 
 	err = c.service.AddNotifierPlugin(notifierPlugin, ps.File)

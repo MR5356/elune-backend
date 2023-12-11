@@ -4,12 +4,12 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"github.com/MR5356/elune-backend/pkg/persistence"
+	"github.com/MR5356/notify"
 )
 
 type NotifierPlugin struct {
 	ID      uint   `json:"id" gorm:"autoIncrement;primaryKey"`
-	Name    string `json:"name"`
-	Desc    string `json:"desc"`
+	Name    string `json:"name" gorm:"length:32;unique;not null"`
 	Version string `json:"-" gorm:"unique;not null"`
 	Params  NotifierParams
 	Status  string `json:"status"`
@@ -21,11 +21,11 @@ func (p *NotifierPlugin) TableName() string {
 	return "elune_notifier_plugins"
 }
 
-type NotifierParams []string
+type NotifierParams []notify.Param
 
 func (p *NotifierParams) Scan(val interface{}) error {
-	s := val.(string)
-	*p = make(NotifierParams, 0)
+	s := val.([]byte)
+	*p = make([]notify.Param, 0)
 	return json.Unmarshal([]byte(s), p)
 }
 

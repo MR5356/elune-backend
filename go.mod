@@ -4,7 +4,7 @@ go 1.21.5
 
 require (
 	github.com/MR5356/jietan v0.0.0-20231130022637-d3683784c4e8
-	github.com/MR5356/notify v0.0.0-20231209104357-f938a1486e5b
+	github.com/MR5356/notify v0.0.0-20231211023418-9ae86129699d
 	github.com/antonfisher/nested-logrus-formatter v1.3.1
 	github.com/asaskevich/EventBus v0.0.0-20200907212545-49d423059eef
 	github.com/casbin/casbin/v2 v2.77.2

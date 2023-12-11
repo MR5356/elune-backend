@@ -59,6 +59,10 @@ func WriteToFile(filename string, data []byte) error {
 	return os.WriteFile(filename, data, 0666)
 }
 
+func ReadFromFile(filename string) ([]byte, error) {
+	return os.ReadFile(filename)
+}
+
 func GetFileMd5(path string) string {
 	pFile, err := os.Open(path)
 	if err != nil {
