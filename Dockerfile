@@ -1,15 +1,16 @@
-FROM golang:1.21.5-alpine3.18 as builder
+FROM golang:1.21.5-bullseye as builder
 WORKDIR /build
-RUN apk add make git && \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends make git && \
     go env -w GOPROXY=https://goproxy.cn,direct
 
 COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN CGO_ENABLED=1 make build
+RUN make build
 
-FROM alpine:3.18
+FROM debian:bullseye
 WORKDIR /app
 COPY --from=builder /build/bin .
 COPY config ./config
