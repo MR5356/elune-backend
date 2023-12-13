@@ -205,6 +205,16 @@ func (s *Service) SendTestMessage(notifierChannelId uint) error {
 	return err
 }
 
+func (s *Service) SendMessage(notifierChannelId uint, msg *notify.Message) error {
+	logrus.Debugf("send message: %+v", msg)
+	notifier, err := s.notifierChannelManager.GetNotifierChannel(notifierChannelId)
+	if err != nil {
+		return err
+	}
+
+	return notifier.Send(context.Background(), msg)
+}
+
 func (s *Service) addNotifierChannel(id uint) error {
 	notifierChannel, err := s.notifierChannelPersistence.Detail(&NotifierChannel{ID: id})
 	if err != nil {

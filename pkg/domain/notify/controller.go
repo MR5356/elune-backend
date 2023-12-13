@@ -3,6 +3,7 @@ package notify
 import (
 	"fmt"
 	"github.com/MR5356/elune-backend/pkg/response"
+	"github.com/MR5356/notify"
 	"github.com/gin-gonic/gin"
 	"os"
 	"strconv"
@@ -199,6 +200,29 @@ func (c *Controller) handleUpdateMessageTemplate(ctx *gin.Context) {
 	response.Success(ctx, nil)
 }
 
+func (c *Controller) handleSendMessage(ctx *gin.Context) {
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		response.Error(ctx, response.CodeParamError, err.Error())
+		return
+	}
+
+	msg := new(notify.Message)
+	err = ctx.ShouldBind(msg)
+	if err != nil {
+		response.Error(ctx, response.CodeParamError, err.Error())
+		return
+	}
+
+	err = c.service.SendMessage(uint(id), msg)
+	if err != nil {
+		response.Error(ctx, response.CodeParamError, err.Error())
+		return
+	}
+	response.Success(ctx, nil)
+}
+
 func (c *Controller) RegisterRoute(group *gin.RouterGroup) {
 	api := group.Group("notify")
 	//api.POST("/plugin/add", c.handleAddNotifierPlugin)
@@ -213,4 +237,5 @@ func (c *Controller) RegisterRoute(group *gin.RouterGroup) {
 	api.POST("/template/add", c.handleAddMessageTemplate)
 	api.DELETE("/template/remove/:id", c.handleRemoveMessageTemplate)
 	api.PUT("/template/update", c.handleUpdateMessageTemplate)
+	api.POST("/message/send/:id", c.handleSendMessage)
 }
