@@ -15,21 +15,21 @@ var (
 	ErrNotifierNotExist     = errors.New("通知插件不存在")
 )
 
-type NotifierManager struct {
+type NotifierPluginManager struct {
 	notifiers map[string]func(params ...string) notify.Notifier
 	lock      sync.Mutex
 	symbols   sync.Map
 }
 
-func NewNotifierManager() *NotifierManager {
-	return &NotifierManager{
+func NewNotifierPluginManager() *NotifierPluginManager {
+	return &NotifierPluginManager{
 		notifiers: make(map[string]func(params ...string) notify.Notifier),
 		lock:      sync.Mutex{},
 		symbols:   sync.Map{},
 	}
 }
 
-func (m *NotifierManager) Verify(symbol plugin.Symbol) (*NotifierPlugin, bool) {
+func (m *NotifierPluginManager) Verify(symbol plugin.Symbol) (*NotifierPlugin, bool) {
 	if n, ok := symbol.(func(params ...string) notify.Notifier); ok {
 		return &NotifierPlugin{
 			Name:   n().Name(),
@@ -40,7 +40,7 @@ func (m *NotifierManager) Verify(symbol plugin.Symbol) (*NotifierPlugin, bool) {
 	}
 }
 
-func (m *NotifierManager) register(name string, symbol plugin.Symbol, params ...string) error {
+func (m *NotifierPluginManager) register(name string, symbol plugin.Symbol, params ...string) error {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 	if _, ok := m.Verify(symbol); !ok {
@@ -53,7 +53,8 @@ func (m *NotifierManager) register(name string, symbol plugin.Symbol, params ...
 	return nil
 }
 
-func (m *NotifierManager) Get(name string) (func(params ...string) notify.Notifier, error) {
+func (m *NotifierPluginManager) Get(name string) (func(params ...string) notify.Notifier, error) {
+	logrus.Debugf("get notifier plugin: %s", name)
 	m.lock.Lock()
 	defer m.lock.Unlock()
 	notifier, ok := m.notifiers[name]
@@ -63,7 +64,7 @@ func (m *NotifierManager) Get(name string) (func(params ...string) notify.Notifi
 	return notifier, nil
 }
 
-func (m *NotifierManager) GetSymbol(filePath string) (plugin.Symbol, error) {
+func (m *NotifierPluginManager) GetSymbol(filePath string) (plugin.Symbol, error) {
 	if v, ok := m.symbols.Load(filePath); ok {
 		return v.(plugin.Symbol), nil
 	}
@@ -81,7 +82,17 @@ func (m *NotifierManager) GetSymbol(filePath string) (plugin.Symbol, error) {
 	return symbol, nil
 }
 
-func (m *NotifierManager) RegisterPlugin(name, path string) error {
+func (m *NotifierPluginManager) RegisterBuiltIn(name string, symbol func(params ...string) notify.Notifier) error {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+	if _, ok := m.notifiers[name]; ok {
+		return ErrNotifierAlreadyExist
+	}
+	m.notifiers[name] = symbol
+	return nil
+}
+
+func (m *NotifierPluginManager) RegisterPlugin(name, path string) error {
 	logrus.Infof("load plugin: %s", path)
 
 	symbol, err := m.GetSymbol(path)

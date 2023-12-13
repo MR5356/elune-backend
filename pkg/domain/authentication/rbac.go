@@ -117,6 +117,9 @@ func (s *RBACService) Initialize() error {
 			"devops", "/user/*", "*",
 		},
 		{
+			"devops", "/notify/*", "*",
+		},
+		{
 			"devops", "/navigation/*", "*",
 		},
 		{
