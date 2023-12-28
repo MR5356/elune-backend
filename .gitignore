@@ -1,0 +1,7 @@
+.idea
+bin
+elune-backend
+db.sqlite
+demo
+pkg/server/static/*
+!pkg/server/static/robots.txt
