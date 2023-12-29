@@ -135,6 +135,9 @@ func (s *RBACService) Initialize() error {
 			"devops", "/cron/*", "*",
 		},
 		{
+			"devops", "/app/*", "*",
+		},
+		{
 			"users", "*", "GET",
 		},
 		{
