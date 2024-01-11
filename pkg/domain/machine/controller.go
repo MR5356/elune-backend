@@ -139,4 +139,6 @@ func (c *Controller) RegisterRoute(group *gin.RouterGroup) {
 	api.GET("/group/list", c.handleListGroup)
 	api.DELETE("/group/delete/:id", c.handleDeleteGroup)
 	api.PUT("/group/update", c.handleUpdateGroup)
+
+	api.GET("/terminal/:id", c.handleTerminal)
 }

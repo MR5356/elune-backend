@@ -3,17 +3,18 @@ package machine
 import (
 	"database/sql/driver"
 	"encoding/json"
+	"github.com/MR5356/elune-backend/pkg/utils/sshutil"
 	"time"
 )
 
 type Machine struct {
-	ID       uint     `json:"id" gorm:"autoIncrement;primaryKey"`
-	Title    string   `json:"title" gorm:"not null"`
-	Desc     string   `json:"desc"`
-	HostInfo HostInfo `json:"hostInfo" gorm:"unique;not null"`
-	MetaInfo MetaInfo `json:"metaInfo"`
-	Group    Group    `json:"group"`
-	GroupId  uint     `json:"groupId"`
+	ID       uint             `json:"id" gorm:"autoIncrement;primaryKey"`
+	Title    string           `json:"title" gorm:"not null"`
+	Desc     string           `json:"desc"`
+	HostInfo sshutil.HostInfo `json:"hostInfo" gorm:"unique;not null"`
+	MetaInfo MetaInfo         `json:"metaInfo"`
+	Group    Group            `json:"group"`
+	GroupId  uint             `json:"groupId"`
 
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
@@ -30,13 +31,6 @@ type Group struct {
 
 func (g *Group) TableName() string {
 	return "elune_machine_group"
-}
-
-type HostInfo struct {
-	Host     string `json:"host"`
-	Port     uint16 `json:"port"`
-	Username string `json:"username"`
-	Password string `json:"password"`
 }
 
 type MetaInfo struct {
@@ -60,16 +54,5 @@ func (m *MetaInfo) Scan(val interface{}) error {
 
 func (m MetaInfo) Value() (driver.Value, error) {
 	s, err := json.Marshal(m)
-	return string(s), err
-}
-
-func (h *HostInfo) Scan(val interface{}) error {
-	s := val.(string)
-	err := json.Unmarshal([]byte(s), &h)
-	return err
-}
-
-func (h HostInfo) Value() (driver.Value, error) {
-	s, err := json.Marshal(h)
 	return string(s), err
 }
