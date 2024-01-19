@@ -67,6 +67,8 @@ func (s *Service) ListKubernetes() ([]*Kubernetes, error) {
 		go func() {
 			defer wg.Done()
 			s.setKubernetesInfos(k8s)
+			// 屏蔽敏感信息
+			k8s.KubeConfig = "******"
 		}()
 	}
 	wg.Wait()
